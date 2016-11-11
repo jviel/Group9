@@ -1,7 +1,8 @@
 
 public class Main {
 	public static void main(String[] args){
-		Database s;
+		Database s = new Database("me");
+		
 		
 	}
 }
