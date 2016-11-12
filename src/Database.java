@@ -21,10 +21,10 @@ public class Database {
         
         checkDatabase();
         //Create tables
-        createPatientTable();
+       /* createPatientTable();
         createProviderTable();
         createTransactionTable();
-        createServiceTable();
+        createServiceTable();*/
     }
     
     private void checkDatabase(){
@@ -35,9 +35,19 @@ public class Database {
 			ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
 			ResultSet providerSet = meta.getTables(null, null, "Provider", null);
 			
-			if(patientSet.next()) {
-				  System.out.println(patientSet.getString(3));
-				}
+			if(!patientSet.next()) {
+				  createPatientTable();
+			}
+			if(!serviceSet.next()){
+				createServiceTable();
+			}
+			if(!transactionSet.next()){
+				createTransactionTable();
+			}
+			if(!providerSet.next()){
+				createProviderTable();
+			}
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
