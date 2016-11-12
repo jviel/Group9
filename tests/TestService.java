@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class TestService {
 
-    // Test constructor that makes new objects
+    // test constructor that makes new objects
     @Test
     public void testServiceNew() {
         try {
@@ -14,7 +14,7 @@ public class TestService {
         }
     }
 
-    // Test constructor that makes objects for DB Wrapper,
+    // test constructor that makes objects for DB Wrapper,
     // validates all variables
     @Test
     public void testService() {
@@ -69,8 +69,6 @@ public class TestService {
         assertTrue(thrown);
     }
 
-    // test for service name too short as well?
-
     @Test
     public void testServiceNameTooLong() {
         boolean thrown = false;
@@ -104,6 +102,8 @@ public class TestService {
         assertTrue(thrown);
     }
 
+    // ---- Test setters and getters ----
+    // all setters tested by their use in constructors
     @Test
     public void testName() {
         Service service = new Service("Massage", 0.0);
@@ -133,11 +133,41 @@ public class TestService {
         assertEquals(true, result);
     }
 
+    // ---- Test overrides and helpers ----
+    // tests toString override
     @Test
     public void testToString() {
         Service service = new Service("Massage", 60.85);
         String expectedResult = "0\tMassage\t$60.85";
         String actualResult = service.toString();
         assertEquals(expectedResult, actualResult);
+    }
+
+    // tests equals and compareStrings methods
+    // more tests could be added to check all equals conditionals
+    @Test
+    public void testEquals() {
+        boolean equal = false;
+        try {
+            Service counseling = new Service(1, "Nutritionist", 60.85, 1);
+            Service sameCounseling = new Service(1, "Nutritionist", 60.85, 1);
+            equal = counseling.equals(sameCounseling);
+        } catch (InputException e) {
+            fail("Bad object.");
+        }
+        assertTrue(equal);
+    }
+
+    @Test
+    public void testEqualsFails() {
+        boolean equal = false;
+        try {
+            Service counseling = new Service(1, "Massage", 60.85, 1);
+            Service massage = new Service(1, "Nutritionist", 60.85, 1);
+            equal = counseling.equals(massage);
+        } catch (InputException e) {
+            fail("Bad object.");
+        }
+        assertFalse(equal);
     }
 }

@@ -4,7 +4,8 @@ class Service {
     Double fee;
     Boolean status;
 
-    // makes new objects
+    // ---- Constructors ----
+    // makes new service
     public Service(String name, Double fee) {
         setName(name);
         setCode(0);
@@ -12,7 +13,7 @@ class Service {
         setStatus(true);
     }
 
-    // makes objects for DB Wrapper
+    // makes service for DB Wrapper
     public Service(int code, String name, Double fee, int status)
         throws InputException {
         String exceptionString = "";
@@ -45,6 +46,7 @@ class Service {
         }
     }
 
+    // ---- Setters and getters ---
     private void setName(String name) {
         this.name = name;
     }
@@ -77,9 +79,50 @@ class Service {
         return status;
     }
 
+    // ---- Overrides ----
     @Override
     public String toString() {
-        return code + "\t" + name + "\t$" + fee;
+        StringBuilder sb = new StringBuilder();
+        return sb.append(code).append("\t")
+                 .append(name).append("\t$")
+                 .append(fee).toString();
     }
 
+    // Overrides to help Database Wrapper ----
+    @Override
+    public boolean equals (Object obj) {
+        boolean ret;
+        if (obj == null) {
+            // no unit test
+            ret = false;
+        } else if (!Service.class.isAssignableFrom(obj.getClass())) {
+            // no unit test
+            ret = false;
+        } else {
+            final Service other = (Service) obj;
+            if (!(compareStrings(name, other.getName())) ||
+                // mismatch or service not in db
+                fee != other.getFee()) {
+                ret = false;
+            } else {
+                ret = true;
+            }
+        }
+        return ret;
+    }
+
+    private boolean compareStrings(String s1, String s2) {
+        boolean ret;
+        if (s1 == null && s2 != null) {
+            // service not in db -- no unit test
+            ret = false;
+        } else if (!s1.equals(s2)) {
+            // services do not match
+            ret = false;
+        } else {
+            // match found in db
+            ret = true;
+        }
+        return ret;
+    }
 }
