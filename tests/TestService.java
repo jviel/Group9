@@ -32,7 +32,7 @@ public class TestService {
           boolean result = service.getStatus();
           assertEquals(true, result);
       } catch (InputException e) {
-          fail("Bad object.");
+          fail(e.getMessage());
       }
     }
 
@@ -43,7 +43,7 @@ public class TestService {
           boolean result = service.getStatus();
           assertEquals(false, result);
       } catch (InputException e) {
-          fail("Bad object.");
+          fail(e.getMessage());
       }
     }
 
@@ -106,41 +106,61 @@ public class TestService {
     // all setters tested by their use in constructors
     @Test
     public void testName() {
-        Service service = new Service("Massage", 0.0);
-        String result = service.getName();
-        assertEquals("Massage", result);
+        try {
+            Service service = new Service("Massage", 0.0);
+            String result = service.getName();
+            assertEquals("Massage", result);
+        } catch (InputException e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
     public void testCode() {
-        Service service = new Service("", 0.0);
-        int result = service.getCode();
-        assertEquals(0, result);
+        try {
+            Service service = new Service(0, "", 0.0, 1);
+            int result = service.getCode();
+            assertEquals(0, result);
+        } catch (InputException e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
     public void testFee() {
-        Service service = new Service("", 60.85);
-        Double expectedResult = 60.85;
-        Double actualResult = service.getFee();
-        assertEquals(expectedResult, actualResult);
+        try {
+            Service service = new Service("", 60.85);
+            Double expectedResult = 60.85;
+            Double actualResult = service.getFee();
+            assertEquals(expectedResult, actualResult);
+        } catch (InputException e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
     public void testStatus() {
-        Service service = new Service("", 60.85);
-        Boolean result = service.getStatus();
-        assertEquals(true, result);
+        try {
+            Service service = new Service(0, "", 60.85, 1);
+            Boolean result = service.getStatus();
+            assertEquals(true, result);
+        } catch (InputException e) {
+            fail(e.getMessage());
+        }
     }
 
     // ---- Test overrides and helpers ----
     // tests toString override
     @Test
     public void testToString() {
-        Service service = new Service("Massage", 60.85);
-        String expectedResult = "0\tMassage\t$60.85";
-        String actualResult = service.toString();
-        assertEquals(expectedResult, actualResult);
+        try {
+            Service service = new Service("Massage", 60.85);
+            String expectedResult = "0\tMassage\t$60.85";
+            String actualResult = service.toString();
+            assertEquals(expectedResult, actualResult);
+        } catch (InputException e) {
+            fail(e.getMessage());
+        }
     }
 
     // tests equals and compareStrings methods
@@ -153,7 +173,7 @@ public class TestService {
             Service sameCounseling = new Service(1, "Nutritionist", 60.85, 1);
             equal = counseling.equals(sameCounseling);
         } catch (InputException e) {
-            fail("Bad object.");
+            fail(e.getMessage());
         }
         assertTrue(equal);
     }
@@ -166,7 +186,7 @@ public class TestService {
             Service massage = new Service(1, "Nutritionist", 60.85, 1);
             equal = counseling.equals(massage);
         } catch (InputException e) {
-            fail("Bad object.");
+            fail(e.getMessage());
         }
         assertFalse(equal);
     }

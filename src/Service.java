@@ -5,14 +5,6 @@ class Service {
     Boolean status;
 
     // ---- Constructors ----
-    // makes new service
-    public Service(String name, Double fee) {
-        setName(name);
-        setCode(0);
-        setFee(fee);
-        setStatus(true);
-    }
-
     // makes service for DB Wrapper
     public Service(int code, String name, Double fee, int status)
         throws InputException {
@@ -44,6 +36,13 @@ class Service {
         } else {
             setStatus(false);
         }
+    }
+
+    // makes new service -- uses first constructor
+    public Service (String name, Double fee)
+        throws InputException {
+        this(0, name, fee, 1);
+        return;
     }
 
     // ---- Setters and getters ---
