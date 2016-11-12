@@ -42,4 +42,11 @@ public class TestService {
 		assertEquals(true, result);
 	}
 
+	@Test 
+	public void testToString() {
+		Service service = new Service("Massage", 1, 60.85);
+		String expectedResult = "1\tMassage\t$60.85";
+		String actualResult = service.toString();
+		assertEquals(expectedResult, actualResult);
+	}
 }

@@ -46,4 +46,9 @@ class Service {
 		return status;
 	}
 	
+	@Override
+	public String toString() {
+		return code + "\t" + name + "\t$" + fee;
+	}
+	
 }
