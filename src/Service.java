@@ -1,64 +1,85 @@
 class Service {
-  String name;
-  int code;
-  Double fee;
-  Boolean status;
+    String name;
+    int code;
+    Double fee;
+    Boolean status;
 
-  // makes new objects
-  public Service(String name, Double fee) {
-    setName(name);
-    setCode(0);
-    setFee(fee);
-    setStatus(true);
-  }
-
-  // makes objects for DB Wrapper
-  public Service(int code, String name, Double fee, int status) {
-    setName(name);
-    setCode(code);
-    setFee(fee);
-    if (status == 1) {
-      setStatus(true);
-    } else {
-      setStatus(false);
+    // makes new objects
+    public Service(String name, Double fee) {
+        setName(name);
+        setCode(0);
+        setFee(fee);
+        setStatus(true);
     }
-  }
 
-  private void setName(String name) {
-    this.name = name;
-  }
+    // makes objects for DB Wrapper
+    public Service(int code, String name, Double fee, int status)
+        throws InputException {
+        String exceptionString = "";
 
-  private void setCode(int code) {
-    this.code = code;
-  }
+        if (code < 0 || code > 999999) {
+            exceptionString += "Code must be a six-digit integer.\n";
+        }
 
-  private void setFee(Double fee) {
-    this.fee = fee;
-  }
+        if (name.length() > 20) {
+            exceptionString += "Name must have 20 characters or fewer.\n";
+        }
 
-  private void setStatus(Boolean status) {
-    this.status = status;
-  }
+        if (fee < 0 || fee > 9999.99) {
+            exceptionString += "Fee must be between 0 and 9999.99 dollars";
+        }
 
-  public String getName() {
-    return name;
-  }
+        if (!(exceptionString.isEmpty())) {
+            exceptionString = exceptionString.substring(0,
+                exceptionString.length() -1);
+            throw new InputException(exceptionString);
+        }
 
-  public int getCode() {
-    return code;
-  }
+        setName(name);
+        setCode(code);
+        setFee(fee);
+        if (status == 1) {
+            setStatus(true);
+        } else {
+            setStatus(false);
+        }
+    }
 
-  public double getFee() {
-    return fee;
-  }
+    private void setName(String name) {
+        this.name = name;
+    }
 
-  public Boolean getStatus() {
-    return status;
-  }
+    private void setCode(int code) {
+        this.code = code;
+    }
 
-  @Override
-  public String toString() {
-    return code + "\t" + name + "\t$" + fee;
-  }
+    private void setFee(Double fee) {
+        this.fee = fee;
+    }
+
+    private void setStatus(Boolean status) {
+        this.status = status;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public double getFee() {
+        return fee;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    @Override
+    public String toString() {
+        return code + "\t" + name + "\t$" + fee;
+    }
 
 }
