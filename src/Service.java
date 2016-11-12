@@ -1,25 +1,49 @@
 class Service {
 	String name;
 	int code;
-	double fee;
+	Double fee;
 	boolean status;
 	
 	// add Validated-constructor for objects from DB Wrapper
 
 	public Service(String name, int code, double fee) {
-		this.name = name;
-		this.code = code;
-		this.fee = fee;
-		status = false;
+		setName(name);
+		setCode(code);
+		setFee(fee);
+		setStatus(true);
 		return;
 	}
 
-	public void setName(String name) {
-		return;
+	private void setName(String name) {
+		this.name = name;
 	}
 	
-
-	public String getName() {
-		return "";
+	private void setCode(int code) {
+		this.code = code;
 	}
+	
+	private void setFee(Double fee) {
+		this.fee = fee;
+	}
+	
+	private void setStatus(boolean status) {
+		this.status = status;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public int getCode() {
+		return code;
+	}
+	
+	public double getFee() {
+		return fee;
+	}
+	
+	public boolean getStatus() {
+		return status;
+	}
+	
 }
