@@ -18,12 +18,30 @@ public class Database {
             System.err.println("Connection with the database failed.");
             return;
         }
-
+        
+        checkDatabase();
         //Create tables
         createPatientTable();
         createProviderTable();
         createTransactionTable();
         createServiceTable();
+    }
+    
+    private void checkDatabase(){
+    	try {
+			DatabaseMetaData meta = conn.getMetaData();
+			ResultSet patientSet = meta.getTables(null, null, "Patients", null);
+			ResultSet serviceSet = meta.getTables(null, null, "Service", null);
+			ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
+			ResultSet providerSet = meta.getTables(null, null, "Provider", null);
+			
+			if(patientSet.next()) {
+				  System.out.println(patientSet.getString(3));
+				}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /*--------------Database Creation Methods-------*/
