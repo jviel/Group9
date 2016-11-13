@@ -1,4 +1,6 @@
 package src;
+import java.util.InputMismatchException;
+import java.util.Scanner;
 
 /*
 JAVADOC NOTES:
@@ -21,11 +23,19 @@ FEATURES
  */
 public class Terminal {
 
+    static Scanner sc = new Scanner(System.in);
+
     public static void main (String [] args){
 
         //Here we should create the database and add parameters to terminals
         System.out.println("Hey andy");
         managerTerminal();
+
+        int x = 0;
+        while (true) {
+            x = getInt("please enter an int: ", 0, 25);
+            System.out.println(x);
+        }
     }
 
 
@@ -57,4 +67,39 @@ public class Terminal {
 
     }
 
+    private static String getString(String prompt, int min, int max)
+    {
+
+        return "";
+    }
+
+    private static int getInt(String prompt, int min, int max) throws InputMismatchException
+    {
+        int ret = -1;
+        boolean valid = false;
+
+        while(!valid)
+        {
+            try {
+                System.out.print(prompt);
+                ret = sc.nextInt(); // throws InputMismatchException if not an int
+                if (ret < min || ret > max) {
+                    throw new InputMismatchException();
+                } else {
+                    valid = true;
+                }
+            }
+            catch (InputMismatchException ex) {
+                System.out.println("Value must be a number between " + min + " and " + max);
+                sc.nextLine();
+            }
+        }
+        return ret;
+    }
+
+    private static Float getFloat()
+    {
+
+        return 0f;
+    }
 }
