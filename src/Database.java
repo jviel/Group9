@@ -3,7 +3,11 @@ import java.io.FileReader;
 import java.util.Vector;
 
 public class Database {
-    Connection conn = null;
+    int patientNum;
+    int serviceNum;
+    int	transactionNum;
+    int	providerNum;
+    Connection 	conn = null;
 
     //Constructor
     public Database(String dbName) {
@@ -35,40 +39,79 @@ public class Database {
             ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
             ResultSet providerSet = meta.getTables(null, null, "Provider", null);
 
+            String patientQuery = 
+                "CREATE TABLE Patients " +
+                "(PatiendID	INT PRIMARY KEY	NOT NULL," +
+                " Name CHAR(25) NOT NULL," +
+                " Address CHAR(25) NOT NULL,"+
+                " City CHAR(25) NOT NULL," +
+                " State CHAR(2) NOT NULL," +
+                " Zipcode CHAR(5) NOT NULL," +
+                " FinancialStanding BIT NOT NULL,"+
+                " Status BIT NOT NULL)";
+
+            String providerQuery = 
+                "CREATE TABLE Providers " +
+                "(ProviderID INT PRIMARY KEY NOT NULL, "+
+                " Name CHAR(25) NOT NULL, "+
+                " Address CHAR(25) NOT NULL,"+
+                " City CHAR(25) NOT NULL," +
+                " State CHAR(2) NOT NULL," +
+                " Zipcode CHAR(5) NOT NULL," +
+                " Status BIT NOT NULL)";
+
+            String transactionQuery = 
+                "CREATE TABLE Transactions " +
+                "(TransactionID INT PRIMARY KEY NOT NULL," +
+                " DateTime CHAR(18) NOT NULL," +
+                " ServiceDate CHAR(10) NOT NULL," +
+                " Comment CHAR(100) NOT NULL," +
+                " PatientID INT NOT NULL," +
+                " ProviderID INT NOT NULL," +
+                " ServiceID INT NOT NULL," +
+                " ConsultID INT NOT NULL)";
+
+            String serviceQuery = 
+                "CREATE TABLE Services " +
+                "(ServiceID INT PRIMARY KEY NOT NULL," +
+                " Name CHAR(25) NOT NULL," +
+                " Fee INT NOT NULL, "+
+                " Status BIT NOT NULL)";
+
             if(!patientSet.next()) {
-                createPatientTable();
+                execQuery(patientQuery);
+                //createPatientTable();
             }
             if(!serviceSet.next()){
-                createServiceTable();
+                execQuery(serviceQuery);
+                //createServiceTable();
             }
             if(!transactionSet.next()){
-                createTransactionTable();
+                execQuery(transactionQuery);
+                //createTransactionTable();
             }
             if(!providerSet.next()){
-                createProviderTable();
+                execQuery(providerQuery);
+                //createProviderTable();
             }
 
-        } catch (SQLException e) {
+            patientNum	= 100000000 + getRowsCount("Patients");
+            providerNum	= 100000000 + getRowsCount("Providers");
+            serviceNum 	= 100000 + getRowsCount("Services");
+
+            patientSet.close();
+            serviceSet.close();
+            transactionSet.close();
+            providerSet.close();
+        } 
+        catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
     }
 
-    /*--------------Database Creation Methods-------*/
-
-    //Creates a table if it doesn't already exist
-    private void createPatientTable(){
-        String query = 
-            "CREATE TABLE Patients " +
-            "(PatiendID	INT PRIMARY KEY	NOT NULL," +
-            " Name CHAR(25) NOT NULL," +
-            " Address CHAR(25) NOT NULL,"+
-            " City CHAR(25) NOT NULL," +
-            " State CHAR(2) NOT NULL," +
-            " Zipcode CHAR(5) NOT NULL," +
-            " FinancialStanding BIT NOT NULL,"+
-            " Status BIT NOT NULL)";
-
+    private void execQuery(String query){
         try {
             Statement stmt = conn.createStatement();
             stmt.executeUpdate(query);
@@ -78,67 +121,153 @@ public class Database {
         }
     }
 
-    //Creates a provider table if it doesn't already exist
-    private void createProviderTable(){
-        String query = 
-            "CREATE TABLE Provider " +
-            "(ProviderID INT PRIMARY KEY NOT NULL, "+
-            " Name CHAR(25) NOT NULL, "+
-            " Address CHAR(25) NOT NULL,"+
-            " City CHAR(25) NOT NULL," +
-            " State CHAR(2) NOT NULL," +
-            " Zipcode CHAR(5) NOT NULL," +
-            " Status BIT NOT NULL)";
+    public int addPatient(Patient newPatient){
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        Patient currentPatient = null;
 
+        try {
+            stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND City=?");
+            stmt.setString(1, newPatient.getName());
+            stmt.setString(2, newPatient.getCity());
+            rs = stmt.executeQuery();
+
+            while(rs.next()){
+                currentPatient = new Patient(rs.getString("Name"), rs.getString("Address"),
+                        rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
+                        rs.getInt("FinancialStanding"), rs.getInt("Status"));
+                if(currentPatient.equals(newPatient)){
+                    System.out.println("Patient already exists.");
+                    stmt.close();
+                    return -1;
+                }
+            }
+
+            stmt = conn.prepareStatement("INSERT INTO Patients VALUES (?,?,?,?,?,?,?,?)");
+            stmt.setInt(1, patientNum);
+            stmt.setString(2, newPatient.getName());
+            stmt.setString(3, newPatient.getAddress());
+            stmt.setString(4, newPatient.getCity());
+            stmt.setString(5, newPatient.getState());
+            stmt.setString(6, newPatient.getZipcode());
+            stmt.setBoolean(7, true);
+            stmt.setBoolean(8, true);
+            stmt.executeUpdate();
+            patientNum++;
+            stmt.close();
+
+        } catch (SQLException | InputException e) {
+            System.out.println(e.getMessage());
+            System.err.println("Invalid patient data.");
+            return -1;
+        }
+
+        return patientNum - 1;
+    }
+
+    private int getRowsCount(String tableName){
         Statement stmt = null;
+        ResultSet rs = null;
+        int rowsCount = 0;
+
         try {
             stmt = conn.createStatement();
-            stmt.executeUpdate(query);
+            rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM " + tableName);
+            rowsCount = rs.getInt("total");
         } 
         catch (SQLException e) {
-            return;
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+
+        return rowsCount;
+    }
+    /*--------------Database Creation Methods-------
+
+    //Creates a table if it doesn't already exist
+    private void createPatientTable(){
+    String query = 
+    "CREATE TABLE Patients " +
+    "(PatiendID	INT PRIMARY KEY	NOT NULL," +
+    " Name CHAR(25) NOT NULL," +
+    " Address CHAR(25) NOT NULL,"+
+    " City CHAR(25) NOT NULL," +
+    " State CHAR(2) NOT NULL," +
+    " Zipcode CHAR(5) NOT NULL," +
+    " FinancialStanding BIT NOT NULL,"+
+    " Status BIT NOT NULL)";
+
+    try {
+    Statement stmt = conn.createStatement();
+    stmt.executeUpdate(query);
+    } 
+    catch (SQLException e) {
+    return;
+    }
+    }
+
+    //Creates a provider table if it doesn't already exist
+    private void createProviderTable(){
+    String query = 
+    "CREATE TABLE Provider " +
+    "(ProviderID INT PRIMARY KEY NOT NULL, "+
+    " Name CHAR(25) NOT NULL, "+
+    " Address CHAR(25) NOT NULL,"+
+    " City CHAR(25) NOT NULL," +
+    " State CHAR(2) NOT NULL," +
+    " Zipcode CHAR(5) NOT NULL," +
+    " Status BIT NOT NULL)";
+
+    Statement stmt = null;
+    try {
+    stmt = conn.createStatement();
+    stmt.executeUpdate(query);
+    } 
+    catch (SQLException e) {
+    return;
+    }
     }
 
     //Creates a transaction table if it doesn't already exist
     private void createTransactionTable(){
-        String query = 
-            "CREATE TABLE Transactions " +
-            "(TransactionID INT PRIMARY KEY NOT NULL," +
-            " DateTime CHAR(18) NOT NULL," +
-            " ServiceDate CHAR(10) NOT NULL," +
-            " Comment CHAR(100) NOT NULL," +
-            " PatientID INT NOT NULL," +
-            " ProviderID INT NOT NULL," +
-            " ServiceID INT NOT NULL," +
-            " ConsultID INT NOT NULL)";
+    String query = 
+    "CREATE TABLE Transactions " +
+    "(TransactionID INT PRIMARY KEY NOT NULL," +
+    " DateTime CHAR(18) NOT NULL," +
+    " ServiceDate CHAR(10) NOT NULL," +
+    " Comment CHAR(100) NOT NULL," +
+    " PatientID INT NOT NULL," +
+    " ProviderID INT NOT NULL," +
+    " ServiceID INT NOT NULL," +
+    " ConsultID INT NOT NULL)";
 
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            stmt.executeUpdate(query);
-        } 
-        catch (SQLException e) {
-            return;
-        }
+    Statement stmt = null;
+    try {
+    stmt = conn.createStatement();
+    stmt.executeUpdate(query);
+    } 
+    catch (SQLException e) {
+    return;
+    }
     }
 
     private void createServiceTable(){
-        String query = 
-            "CREATE TABLE Service " +
-            "(ServiceID INT PRIMARY KEY NOT NULL," +
-            " Name CHAR(25) NOT NULL," +
-            " Fee INT NOT NULL, "+
-            " Status BIT NOT NULL)";
+    String query = 
+    "CREATE TABLE Service " +
+        "(ServiceID INT PRIMARY KEY NOT NULL," +
+        " Name CHAR(25) NOT NULL," +
+        " Fee INT NOT NULL, "+
+        " Status BIT NOT NULL)";
 
-        Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            stmt.executeUpdate(query);
-        } 
-        catch (SQLException e) {
-            return;
-        }
+    Statement stmt = null;
+    try {
+        stmt = conn.createStatement();
+        stmt.executeUpdate(query);
+    } 
+    catch (SQLException e) {
+        return;
     }
-    /*-----------End Database Creation Methods-------*/
+}
+-----------End Database Creation Methods-------
+*/
 }
