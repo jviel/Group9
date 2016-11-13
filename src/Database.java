@@ -20,7 +20,9 @@ public class Database {
         } 
         catch (ClassNotFoundException | SQLException e) {
             System.err.println("Connection with the database failed.");
-            return;
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("The program will be shut down.");
+            System.exit(1);
         }
 
         checkDatabase();
@@ -35,48 +37,52 @@ public class Database {
         try {
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet patientSet = meta.getTables(null, null, "Patients", null);
-            ResultSet serviceSet = meta.getTables(null, null, "Service", null);
+            ResultSet serviceSet = meta.getTables(null, null, "Services", null);
             ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
-            ResultSet providerSet = meta.getTables(null, null, "Provider", null);
+            ResultSet providerSet = meta.getTables(null, null, "Providers", null);
 
             String patientQuery = 
                 "CREATE TABLE Patients " +
-                "(PatiendID	INT PRIMARY KEY	NOT NULL," +
+                "(PatientID INT NOT NULL," +
                 " Name CHAR(25) NOT NULL," +
                 " Address CHAR(25) NOT NULL,"+
                 " City CHAR(25) NOT NULL," +
                 " State CHAR(2) NOT NULL," +
                 " Zipcode CHAR(5) NOT NULL," +
                 " FinancialStanding BIT NOT NULL,"+
-                " Status BIT NOT NULL)";
+                " Status BIT NOT NULL," +
+                " PRIMARY KEY(PatientID))";
 
             String providerQuery = 
                 "CREATE TABLE Providers " +
-                "(ProviderID INT PRIMARY KEY NOT NULL, "+
+                "(ProviderID INT NOT NULL, "+
                 " Name CHAR(25) NOT NULL, "+
                 " Address CHAR(25) NOT NULL,"+
                 " City CHAR(25) NOT NULL," +
                 " State CHAR(2) NOT NULL," +
                 " Zipcode CHAR(5) NOT NULL," +
-                " Status BIT NOT NULL)";
+                " Status BIT NOT NULL," +
+                "PRIMARY KEY(ProviderID))";
 
             String transactionQuery = 
                 "CREATE TABLE Transactions " +
-                "(TransactionID INT PRIMARY KEY NOT NULL," +
+                "(TransactionID INT NOT NULL," +
                 " DateTime CHAR(18) NOT NULL," +
                 " ServiceDate CHAR(10) NOT NULL," +
                 " Comment CHAR(100) NOT NULL," +
                 " PatientID INT NOT NULL," +
                 " ProviderID INT NOT NULL," +
                 " ServiceID INT NOT NULL," +
-                " ConsultID INT NOT NULL)";
+                " ConsultID INT NOT NULL," +
+                " PRIMARY KEY(TransactionID))";
 
             String serviceQuery = 
                 "CREATE TABLE Services " +
-                "(ServiceID INT PRIMARY KEY NOT NULL," +
+                "(ServiceID INT NOT NULL," +
                 " Name CHAR(25) NOT NULL," +
                 " Fee INT NOT NULL, "+
-                " Status BIT NOT NULL)";
+                " Status BIT NOT NULL," +
+                " PRIMARY KEY(ServiceID))";
 
             if(!patientSet.next()) {
                 execQuery(patientQuery);
@@ -105,8 +111,10 @@ public class Database {
             providerSet.close();
         } 
         catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.err.println("There was an error with the database.");
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("The program will be shut down.");
+            System.exit(1);
         }
 
     }
@@ -117,7 +125,10 @@ public class Database {
             stmt.executeUpdate(query);
         } 
         catch (SQLException e) {
-            return;
+        	System.err.println("There was an error with the database.");
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("The program will be shut down.");
+            System.exit(1);
         }
     }
 
@@ -157,8 +168,7 @@ public class Database {
             stmt.close();
 
         } catch (SQLException | InputException e) {
-            System.out.println(e.getMessage());
-            System.err.println("Invalid patient data.");
+            System.err.println("Invalid patient data. The patient will not be added.");
             return -1;
         }
 
@@ -176,8 +186,10 @@ public class Database {
             rowsCount = rs.getInt("total");
         } 
         catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	System.err.println("There was an error with the database.");
+            System.err.println("Error: " + e.getMessage());
+            System.err.println("The program will be shut down.");
+            System.exit(1);
         }
 
         return rowsCount;
