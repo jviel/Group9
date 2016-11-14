@@ -1,5 +1,6 @@
 .gitattributes
-.iml
+*.iml
+*.idea
 # Created by https://www.gitignore.io/api/java,intellij,eclipse,macos,windows,linux
 
 ### Intellij ###
