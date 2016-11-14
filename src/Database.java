@@ -26,18 +26,19 @@ public class Database {
         }
 
         checkDatabase();
-
     }
 
     /*----Checks the database and creates tables during the first run---*/
     private void checkDatabase(){
         try {
+            /*---Retrieve tables---*/
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet patientSet = meta.getTables(null, null, "Patients", null);
             ResultSet serviceSet = meta.getTables(null, null, "Services", null);
             ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
             ResultSet providerSet = meta.getTables(null, null, "Providers", null);
 
+            /*---Queries used to create tables---*/
             String patientQuery = 
                 "CREATE TABLE Patients " +
                 "(PatientID INT NOT NULL," +
@@ -82,33 +83,29 @@ public class Database {
                 " PRIMARY KEY(ServiceID))";
 
             String [] patientColumns = {"PatientID", "Name", "Address", "City", "State",
-                                        "Zipcode", "FinancialStanding", "Status"};
+                "Zipcode", "FinancialStanding", "Status"};
 
             String [] providerColumns = {"ProviderID", "Name", "Address", "City", "State",
-                                        "Zipcode", "Status"};
+                "Zipcode", "Status"};
 
             String [] serviceColumns = {"ServiceID", "Name", "Fee", "Status"};
 
             String [] transactionColumns = {"TransactionID", "DateTime", "ServiceDate",
-                                            "Comment", "PatientID", "ProviderID",
-                                            "ServiceID", "ConsultID"};
+                "Comment", "PatientID", "ProviderID",
+                "ServiceID", "ConsultID"};
 
             /*----Check if the tables exist---*/
             if(!patientSet.next()) {
                 execQuery(patientQuery);
-                //createPatientTable();
             }
             if(!serviceSet.next()){
                 execQuery(serviceQuery);
-                //createServiceTable();
             }
             if(!transactionSet.next()){
                 execQuery(transactionQuery);
-                //createTransactionTable();
             }
             if(!providerSet.next()){
                 execQuery(providerQuery);
-                //createProviderTable();
             }
 
             /*---Check if the columns are corrupted---*/
@@ -117,17 +114,18 @@ public class Database {
             checkColumns("Transactions", transactionColumns);
             checkColumns("Services", serviceColumns);      
 
+            /*---Get last used ID's---*/
             patientNum	= 100000000 + getRowsCount("Patients");
             providerNum	= 100000000 + getRowsCount("Providers");
             transactionNum = 100000000 + getRowsCount("Transactions");
             serviceNum 	= 100000 + getRowsCount("Services");
-            
 
             patientSet.close();
             serviceSet.close();
             transactionSet.close();
             providerSet.close();
         } 
+        /*---Kill the program if there were any problems with the database---*/
         catch (SQLException e) {
             System.err.println("There was an error with the database.");
             System.err.println("Error: " + e.getMessage());
@@ -150,25 +148,55 @@ public class Database {
         columnSet.close();
     }
 
-    private void execQuery(String query){
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(query);
-        } 
-        catch (SQLException e) {
-            System.err.println("There was an error with the database.");
-            System.err.println("Error: " + e.getMessage());
-            System.err.println("The program will be shut down.");
-            System.exit(1);
-        }
+    /*---Performs executeUpdate of a given query---*/
+    private void execQuery(String query) throws SQLException{
+    	Statement stmt = conn.createStatement();
+        stmt.executeUpdate(query);
+        stmt.close();
     }
 
+    /*----Returns the row count of a specific table----*/
+    private int getRowsCount(String tableName) throws SQLException{
+        Statement stmt = null;
+        ResultSet rs = null;
+        int rowsCount = 0;
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM " + tableName);
+        rowsCount = rs.getInt("total");
+        stmt.close();
+        rs.close();
+        
+        return rowsCount;
+    }   
+    
+    /*---Checks if a given entry by ID exists in the db---*/
+    private Boolean entryExists(String table, int ID) throws SQLException{
+    	Statement stmt = null;
+    	ResultSet rs = null;
+    	Boolean exists = false;
+    	String column = table.substring(0, table.length() - 1);
+    	column += "ID";
+    	
+    	stmt=conn.createStatement(); 
+    	rs = stmt.executeQuery("SELECT * FROM " + table + " WHERE " + column + " = " + Integer.toString(ID));
+    	if(rs.next()){
+    		exists = true;
+    	}
+    	
+    	stmt.close();
+    	rs.close();
+    	return exists;
+    }
+   
+    /*----Adds a patient to the database----*/
     public int addPatient(Patient newPatient){
         PreparedStatement stmt = null;
         ResultSet rs = null;
         Patient currentPatient = null;
 
         try {
+            //Check if the patient record already exists
             stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND City=?");
             stmt.setString(1, newPatient.getName());
             stmt.setString(2, newPatient.getCity());
@@ -181,10 +209,12 @@ public class Database {
                 if(currentPatient.equals(newPatient)){
                     System.out.println("Patient already exists.");
                     stmt.close();
+                    rs.close();
                     return -1;
                 }
             }
 
+            //Otherwise adds to database and returns patient id
             stmt = conn.prepareStatement("INSERT INTO Patients VALUES (?,?,?,?,?,?,?,?)");
             stmt.setInt(1, patientNum);
             stmt.setString(2, newPatient.getName());
@@ -197,32 +227,65 @@ public class Database {
             stmt.executeUpdate();
             patientNum++;
             stmt.close();
+            rs.close();
 
-        } catch (SQLException | InputException e) {
+        }
+        catch(SQLException e){
+        	System.err.println("Error occured in the database while adding the patient data.");
+        	return -1;
+        }
+        catch (InputException e) {
             System.err.println("Invalid patient data. The patient will not be added.");
             return -1;
         }
         return patientNum - 1;
     }
 
-    private int getRowsCount(String tableName){
-        Statement stmt = null;
-        ResultSet rs = null;
-        int rowsCount = 0;
+    /*----Updates patient data in the database----*/
+    public Boolean updatePatient(int ID, Patient patient){
+        PreparedStatement stmt = null;
 
         try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM " + tableName);
-            rowsCount = rs.getInt("total");
+        	if(!entryExists("Patients", ID)){
+        		return false;
+        	}
+            stmt = conn.prepareStatement("UPDATE Patients SET Name=?, Address=?, City=?, " +
+                                        "State=?, Zipcode=?, FinancialStanding=?, Status=? " +
+                                        "WHERE PatientID=?");
+            stmt.setString(1, patient.getName());
+            stmt.setString(2, patient.getAddress());
+            stmt.setString(3, patient.getCity());
+            stmt.setString(4, patient.getState());
+            stmt.setString(5, patient.getZipcode());
+            stmt.setBoolean(6, patient.getFinancialStanding());
+            stmt.setBoolean(7, patient.getEnrollmentStatus());
+            stmt.setInt(8, ID);
+            stmt.executeUpdate();
+            stmt.close();
         } 
         catch (SQLException e) {
-            System.err.println("There was an error with the database.");
-            System.err.println("Error: " + e.getMessage());
-            System.err.println("The program will be shut down.");
-            System.exit(1);
+            System.err.println("Error occured in the database while updating the patient data.");
+            return false;
         }
-
-        return rowsCount;
+        return true;	
     }
-   
+    
+    /*---Sets patient Status=0, marking as deleted---*/
+    public Boolean removePatient(int ID){
+    	Statement stmt = null;
+    	
+    	try {
+    		if(!entryExists("Patients", ID)){
+        		return false;
+        	}
+    		stmt = conn.createStatement();
+			stmt.executeUpdate("UPDATE Patients SET Status = 0 " +
+					"WHERE PatientID = " + Integer.toString(ID));
+		} 
+    	catch (SQLException e) {
+			System.err.println("Error occured in the database while removing a patient.");
+			return false;
+		}
+    	return true;
+    }  
 }
