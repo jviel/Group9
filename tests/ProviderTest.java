@@ -119,6 +119,17 @@ public class ProviderTest {
     }
 
     @org.junit.Test
+    public void setNameTooLong() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setName("abcdefghijklmnopqrstuvwxyz");
+
+        String result = TestProvider.getName();
+
+        assertNotEquals("Name wasn't set properly", result, "abcdefghijklmnopqrstuvwxyz");
+    }
+
+    @org.junit.Test
     public void setAddress() throws Exception {
 
     }

@@ -74,7 +74,7 @@ public abstract class Entity {
     public boolean setIdNumber(int newNumber) {
         boolean ret = false;
 
-        if ((String.valueOf(newNumber).length() == 9 && newNumber >= 0) || newNumber == 0) {
+        if (newNumber <= 999999999 && newNumber >= 0) {
             this.idNumber = newNumber;
 
             ret = true;
