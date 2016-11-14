@@ -26,6 +26,18 @@ public class Database {
         }
 
         checkDatabase();
+        
+        try {
+			Service n = new Service("Maerwerssagea", 677.590);
+			Provider p = new Provider("JJ", "AS", "DeD", "OR", "97233", 1);
+			System.out.print(addService(n));
+			System.out.print(updateService(100000, n));
+			System.out.print(removeService(100000));
+			System.out.print(addProvider(p));
+		} catch (InputException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     /*----Checks the database and creates tables during the first run---*/
@@ -78,7 +90,7 @@ public class Database {
                 "CREATE TABLE Services " +
                 "(ServiceID INT NOT NULL," +
                 " Name CHAR(25) NOT NULL," +
-                " Fee INT NOT NULL, "+
+                " Fee FLOAT NOT NULL, "+
                 " Status BIT NOT NULL," +
                 " PRIMARY KEY(ServiceID))";
 
@@ -288,4 +300,141 @@ public class Database {
         }
         return true;
     }  
+    
+    /*---Adds a service to the database---*/
+    public int addService(Service newService){
+    	PreparedStatement stmt = null;
+        ResultSet rs = null;
+        Service currentService = null;
+
+        try {
+            //Check if the service record already exists
+            stmt = conn.prepareStatement("SELECT * FROM Services WHERE Name=?");
+            stmt.setString(1, newService.getName());
+            rs = stmt.executeQuery();
+       
+            while(rs.next()){
+                currentService = new Service(rs.getString("Name"), rs.getDouble("Fee"));
+                if(currentService.equals(newService)){
+                    System.out.println("Service already exists.");
+                    stmt.close();
+                    rs.close();
+                    return -1;
+                }
+            }
+
+            //Otherwise adds to database and returns service id
+            stmt = conn.prepareStatement("INSERT INTO Services VALUES (?,?,?,?)");
+            stmt.setInt(1, serviceNum);
+            stmt.setString(2, newService.getName());
+            stmt.setDouble(3, newService.getFee());
+            stmt.setBoolean(4, true);
+            stmt.executeUpdate();
+            serviceNum++;
+            stmt.close();
+            rs.close();
+
+        }
+        catch(SQLException e){
+            System.err.println("Error occured in the database while adding the service data.");
+            return -1;
+        }
+        catch (InputException e) {
+            System.err.println("Invalid service data. The service will not be added.");
+            return -1;
+        }
+        return serviceNum - 1;
+    }
+    
+    /*---Updates service data in the database---*/
+    public Boolean updateService(int ID, Service service){
+    	PreparedStatement stmt = null;
+
+        try {
+            if(!entryExists("Services", ID)){
+                return false;
+            }
+            stmt = conn.prepareStatement("UPDATE Services SET Name=?, Fee=? WHERE ServiceID=?");
+            stmt.setString(1, service.getName());
+            stmt.setDouble(2, service.getFee());
+            stmt.setInt(3, ID);
+            stmt.executeUpdate();
+            stmt.close();
+        } 
+        catch (SQLException e) {
+            System.err.println("Error occured in the database while updating the service data.");
+            return false;
+        }
+        return true;	
+    }
+    
+    /*---Sets service Status=0, marking as deleted---*/
+    public Boolean removeService(int ID){
+    	 Statement stmt = null;
+
+         try {
+             if(!entryExists("Services", ID)){
+                 return false;
+             }
+             stmt = conn.createStatement();
+             stmt.executeUpdate("UPDATE Services SET Status = 0 " +
+                                 "WHERE ServiceID = " + Integer.toString(ID));
+         } 
+         catch (SQLException e) {
+             System.err.println("Error occured in the database while removing a patient.");
+             return false;
+         }
+         return true;
+    }
+    
+    /*---Adds a provider to the database---*/
+    public int addProvider(Provider newProvider){
+    	 PreparedStatement stmt = null;
+         ResultSet rs = null;
+         Provider currentProvider = null;
+
+         try {
+             //Check if the provider record already exists
+             stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND City=?");
+             stmt.setString(1, newProvider.getName());
+             stmt.setString(2, newProvider.getCity());
+             rs = stmt.executeQuery();
+
+             while(rs.next()){
+                 currentProvider = new Provider(rs.getString("Name"), rs.getString("Address"),
+                         rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
+                         rs.getInt("Status"));
+                 if(currentProvider.equals(newProvider)){
+                     System.out.println("Provider already exists.");
+                     stmt.close();
+                     rs.close();
+                     return -1;
+                 }
+             }
+
+             //Otherwise adds to database and returns provider id
+             stmt = conn.prepareStatement("INSERT INTO Providers VALUES (?,?,?,?,?,?,?)");
+             stmt.setInt(1, providerNum);
+             stmt.setString(2, newProvider.getName());
+             stmt.setString(3, newProvider.getAddress());
+             stmt.setString(4, newProvider.getCity());
+             stmt.setString(5, newProvider.getState());
+             stmt.setString(6, newProvider.getZipcode());
+             stmt.setBoolean(7, true);
+             stmt.executeUpdate();
+             providerNum++;
+             stmt.close();
+             rs.close();
+
+         }
+         catch(SQLException e){
+             System.err.println("Error occured in the database while adding the provider data.");
+             return -1;
+         }
+         catch (InputException e) {
+             System.err.println("Invalid provider data. The provider will not be added.");
+             return -1;
+         }
+         return providerNum - 1;
+    }
 }
