@@ -1,4 +1,3 @@
-package src;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -31,14 +30,10 @@ public class Terminal {
         System.out.println("Hey andy");
         managerTerminal();
 
-        int x    = getInt("please enter an int: ", 0, 9999);
-        System.out.println(x);
-        String s = getString("please enter a name: ", 0, 25);
-        System.out.println(s);
-        Float f  = getFloat("please enter a decimal number: ", 0f, 99999.99f);
-        System.out.println(f);
+        int x    = getInt("please enter an int: ", 0, 9999); System.out.println(x);
+        String s = getString("please enter a name: ", 0, 25); System.out.println(s);
+        Float f  = getFloat("please enter a decimal number: ", 0f, 99999.99f); System.out.println(f);
     }
-
 
     /**
      * Description
@@ -80,7 +75,8 @@ public class Terminal {
         while(!valid)
         {
             System.out.print(prompt);
-            ret = sc.nextLine(); if (ret.length() < min || ret.length() > max)
+            ret = sc.nextLine();
+            if (ret.length() < min || ret.length() > max)
                 System.out.println("Input length must be between " + min + " and " + max + " characters");
             else
                 valid = true;
