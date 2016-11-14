@@ -33,6 +33,7 @@ public class Database {
            createServiceTable();*/
     }
 
+    /*----Checks the database and creates tables during the first run---*/
     private void checkDatabase(){
         try {
             DatabaseMetaData meta = conn.getMetaData();
@@ -84,6 +85,19 @@ public class Database {
                 " Status BIT NOT NULL," +
                 " PRIMARY KEY(ServiceID))";
 
+            String [] patientColumns = {"PatientID", "Name", "Address", "City", "State",
+                                        "Zipcode", "FinancialStanding", "Status"};
+
+            String [] providerColumns = {"ProviderID", "Name", "Address", "City", "State",
+                                        "Zipcode", "Status"};
+
+            String [] serviceColumns = {"ServiceID", "Name", "Fee", "Status"};
+
+            String [] transactionColumns = {"TransactionID", "DateTime", "ServiceDate",
+                                            "Comment", "PatientID", "ProviderID",
+                                            "ServiceID", "ConsultID"};
+
+            /*----Check if the tables exist---*/
             if(!patientSet.next()) {
                 execQuery(patientQuery);
                 //createPatientTable();
@@ -101,6 +115,12 @@ public class Database {
                 //createProviderTable();
             }
 
+            /*---Check if the columns are corrupted---*/
+            checkColumns("Patients", patientColumns);
+            checkColumns("Providers", providerColumns);
+            checkColumns("Transactions", transactionColumns);
+            checkColumns("Services", serviceColumns);      
+
             patientNum	= 100000000 + getRowsCount("Patients");
             providerNum	= 100000000 + getRowsCount("Providers");
             serviceNum 	= 100000 + getRowsCount("Services");
@@ -116,7 +136,20 @@ public class Database {
             System.err.println("The program will be shut down.");
             System.exit(1);
         }
+    }
 
+    /*----Checks for corrupted columns----*/
+    private void checkColumns(String tableName, String [] columns) throws SQLException{
+        DatabaseMetaData meta = conn.getMetaData();
+        ResultSet columnSet = null;
+
+        for(int i = 0; i < columns.length; i++){
+            columnSet = meta.getColumns(null, null, tableName, columns[i]);
+            if(!columnSet.next()){
+                throw new SQLException("Corrupted Database.");
+            }
+        }
+        columnSet.close();
     }
 
     private void execQuery(String query){
@@ -125,7 +158,7 @@ public class Database {
             stmt.executeUpdate(query);
         } 
         catch (SQLException e) {
-        	System.err.println("There was an error with the database.");
+            System.err.println("There was an error with the database.");
             System.err.println("Error: " + e.getMessage());
             System.err.println("The program will be shut down.");
             System.exit(1);
@@ -186,7 +219,7 @@ public class Database {
             rowsCount = rs.getInt("total");
         } 
         catch (SQLException e) {
-        	System.err.println("There was an error with the database.");
+            System.err.println("There was an error with the database.");
             System.err.println("Error: " + e.getMessage());
             System.err.println("The program will be shut down.");
             System.exit(1);
