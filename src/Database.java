@@ -26,11 +26,7 @@ public class Database {
         }
 
         checkDatabase();
-        //Create tables
-        /* createPatientTable();
-           createProviderTable();
-           createTransactionTable();
-           createServiceTable();*/
+
     }
 
     /*----Checks the database and creates tables during the first run---*/
@@ -123,7 +119,9 @@ public class Database {
 
             patientNum	= 100000000 + getRowsCount("Patients");
             providerNum	= 100000000 + getRowsCount("Providers");
+            transactionNum = 100000000 + getRowsCount("Transactions");
             serviceNum 	= 100000 + getRowsCount("Services");
+            
 
             patientSet.close();
             serviceSet.close();
@@ -143,10 +141,10 @@ public class Database {
         DatabaseMetaData meta = conn.getMetaData();
         ResultSet columnSet = null;
 
-        for(int i = 0; i < columns.length; i++){
-            columnSet = meta.getColumns(null, null, tableName, columns[i]);
+        for(String column : columns){
+            columnSet = meta.getColumns(null, null, tableName, column);
             if(!columnSet.next()){
-                throw new SQLException("Corrupted Database.");
+                throw new SQLException("Corrupted Database. " + tableName);
             }
         }
         columnSet.close();
@@ -204,7 +202,6 @@ public class Database {
             System.err.println("Invalid patient data. The patient will not be added.");
             return -1;
         }
-
         return patientNum - 1;
     }
 
@@ -227,92 +224,5 @@ public class Database {
 
         return rowsCount;
     }
-    /*--------------Database Creation Methods-------
-
-    //Creates a table if it doesn't already exist
-    private void createPatientTable(){
-    String query = 
-    "CREATE TABLE Patients " +
-    "(PatiendID	INT PRIMARY KEY	NOT NULL," +
-    " Name CHAR(25) NOT NULL," +
-    " Address CHAR(25) NOT NULL,"+
-    " City CHAR(25) NOT NULL," +
-    " State CHAR(2) NOT NULL," +
-    " Zipcode CHAR(5) NOT NULL," +
-    " FinancialStanding BIT NOT NULL,"+
-    " Status BIT NOT NULL)";
-
-    try {
-    Statement stmt = conn.createStatement();
-    stmt.executeUpdate(query);
-    } 
-    catch (SQLException e) {
-    return;
-    }
-    }
-
-    //Creates a provider table if it doesn't already exist
-    private void createProviderTable(){
-    String query = 
-    "CREATE TABLE Provider " +
-    "(ProviderID INT PRIMARY KEY NOT NULL, "+
-    " Name CHAR(25) NOT NULL, "+
-    " Address CHAR(25) NOT NULL,"+
-    " City CHAR(25) NOT NULL," +
-    " State CHAR(2) NOT NULL," +
-    " Zipcode CHAR(5) NOT NULL," +
-    " Status BIT NOT NULL)";
-
-    Statement stmt = null;
-    try {
-    stmt = conn.createStatement();
-    stmt.executeUpdate(query);
-    } 
-    catch (SQLException e) {
-    return;
-    }
-    }
-
-    //Creates a transaction table if it doesn't already exist
-    private void createTransactionTable(){
-    String query = 
-    "CREATE TABLE Transactions " +
-    "(TransactionID INT PRIMARY KEY NOT NULL," +
-    " DateTime CHAR(18) NOT NULL," +
-    " ServiceDate CHAR(10) NOT NULL," +
-    " Comment CHAR(100) NOT NULL," +
-    " PatientID INT NOT NULL," +
-    " ProviderID INT NOT NULL," +
-    " ServiceID INT NOT NULL," +
-    " ConsultID INT NOT NULL)";
-
-    Statement stmt = null;
-    try {
-    stmt = conn.createStatement();
-    stmt.executeUpdate(query);
-    } 
-    catch (SQLException e) {
-    return;
-    }
-    }
-
-    private void createServiceTable(){
-    String query = 
-    "CREATE TABLE Service " +
-        "(ServiceID INT PRIMARY KEY NOT NULL," +
-        " Name CHAR(25) NOT NULL," +
-        " Fee INT NOT NULL, "+
-        " Status BIT NOT NULL)";
-
-    Statement stmt = null;
-    try {
-        stmt = conn.createStatement();
-        stmt.executeUpdate(query);
-    } 
-    catch (SQLException e) {
-        return;
-    }
-}
------------End Database Creation Methods-------
-*/
+   
 }
