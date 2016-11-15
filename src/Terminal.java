@@ -1,4 +1,3 @@
-package src;
 import java.util.Scanner;
 import java.util.jar.Pack200;
 import java.util.InputMismatchException;
@@ -62,9 +61,7 @@ public class Terminal {
 
 
         }
-
     }
-
 
     /**
      * currently do not need
