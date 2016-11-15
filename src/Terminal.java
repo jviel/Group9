@@ -214,12 +214,12 @@ public class Terminal {
     /**
      * For getting user input in the form of a float within given range. Error checking within
      * @param String prompt to display to user
-     * @param Float minimum allowable value
-     * @param Float maximum allowable value
+     * @param float minimum allowable value
+     * @param float maximum allowable value
      */
-    private static Float getFloat(String prompt, Float min, Float max)
+    private static float getFloat(String prompt, float min, float max)
     {
-        Float ret = -1f;
+        float ret = -1f;
         boolean valid = false;
 
         while(!valid)
