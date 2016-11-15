@@ -1,3 +1,4 @@
+package src;
 import java.util.Scanner;
 import java.util.jar.Pack200;
 import java.util.InputMismatchException;
@@ -43,8 +44,8 @@ public class Terminal {
         int tmMin = 1;
         int userOption = 0;
 
-        System.out.print(terminalMenu);
         while (userOption != 4){
+            System.out.print(terminalMenu);
             userOption = getInt(userPrompt,tmMin, tmMax);
 
             switch(userOption) {
@@ -125,7 +126,6 @@ public class Terminal {
         System.out.println("Exiting Manager Terminal...\n");
         //return?
     }
-
     /**
      * For creating a Service object with name and fee fields
      *
