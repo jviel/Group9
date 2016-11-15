@@ -1,5 +1,6 @@
+package src;
 
-class Service {
+public class Service {
     String name;
     int code;
     Double fee;
