@@ -3,12 +3,12 @@ package src;
 public class Service {
     String name;
     int code;
-    Double fee;
+    Float fee;
     Boolean status;
 
     // ---- Constructors ----
     // makes service for DB Wrapper
-    public Service(int code, String name, Double fee, int status)
+    public Service(int code, String name, Float fee, int status)
         throws InputException {
         String exceptionString = "";
 
@@ -41,7 +41,7 @@ public class Service {
     }
 
     // makes new service -- uses first constructor
-    public Service (String name, Double fee)
+    public Service (String name, Float fee)
         throws InputException {
         this(0, name, fee, 1);
         return;
@@ -56,7 +56,7 @@ public class Service {
         this.code = code;
     }
 
-    private void setFee(Double fee) {
+    private void setFee(Float fee) {
         this.fee = fee;
     }
 
@@ -72,7 +72,7 @@ public class Service {
         return code;
     }
 
-    public double getFee() {
+    public Float getFee() {
         return fee;
     }
 
@@ -102,10 +102,11 @@ public class Service {
         } else {
             final Service other = (Service) obj;
             if (!(compareStrings(name, other.getName())) ||
+                (Math.abs(fee - other.getFee()) > 0.000000001)) {     // ugliness to compare floats
                 // mismatch or service not in db
-                fee != other.getFee()) {
                 ret = false;
             } else {
+                // match
                 ret = true;
             }
         }
