@@ -34,14 +34,20 @@ public class Terminal {
          */
 
         // run terminal VM
-        final String TerminalPrompt = "Menu: (1) Manager, (2) Operator, (3) Provider, (4) Quit";
+        final String terminalMenu =   "@MainMenu \n" + "" +
+                                        "Options: (1) Manager, (2) Operator, (3) Provider, (4) Quit \n";
+        final String userPrompt = "Enter option: ";
+        int tmMax = 4;
+        int tmMin = 1;
         int userOption = 0;
 
+        System.out.print(terminalMenu);
         while (userOption != 4){
-            userOption = menu(TerminalPrompt);
+            userOption = getInt(userPrompt,tmMin, tmMax);
 
             switch(userOption) {
-                case 1: System.out.println("Manager Terminal:" + '\n');
+                case 1: System.out.println("Entering Manager Terminal...." + '\n');
+                        managerTerminal();
                         break;
                 case 2: System.out.println("Operator Terminal:" + '\n');
                         break;
@@ -61,9 +67,8 @@ public class Terminal {
 
 
     /**
-     * Uses static scanner to take user input for prompt - No error checking done
-     *
-     */
+     * currently do not need
+
     private static int menu(final String prompt){
         int option = 0;
 
@@ -80,9 +85,64 @@ public class Terminal {
 
         return option;
     }
+    */
+
+    /**
+     * Virtualizes manager terminal
+     * @param dbWrapper
+     */
     private static void managerTerminal(){
+        /* Alternate menu
+        final String terminalMenu = "Manager Terminal Menu: \n(1) List Services, (2) Add Services, (3) Update Services, (4) Delete Services \n" +
+                                    "(5) Print EFT Report, (6) Print Summary Report, (7) Print Patient Report, (8) Print Provider Report";
+        */
+        final String managerMenu =  "@Manager Terminal \n" +
+                                    "For Services: (1) List, (2) Add,     (3) Update,  (4) Delete \n" +
+                                    "For Reports:  (5) EFT,  (6) Summary, (7) Patient, (8) Provider \n" +
+                                    "Other:        (9) Exit Manger Terminal \n";
+        final String prompt = "Enter option: ";
+        int mmMax = 9;
+        int mmMin = 1;
+        int option = 0;
 
 
+        System.out.println(managerMenu);
+        while (option != 9){
+
+            option = getInt(prompt, mmMin, mmMax);
+
+            switch(option){
+                case 1: //List services
+                        break;
+                case 2: //Add service
+                        break;
+                case 3: //Update service
+                        break;
+                case 4: //Delete service
+                        break;
+                case 5: //EfT
+                        break;
+                case 6: //Summary
+                        break;
+                case 7: //Patient report
+                        break;
+                case 8: //Provider report
+                        break;
+                case 9: //quit...
+                        break;
+                default: System.out.println("Option " + option + " not valid");
+                        break;
+
+            }
+        }
+
+        System.out.println("Exiting Manager Terminal...\n");
+        //return?
+    }
+   
+    private static void getService(){
+        //Service
+      //  Service service =
 
     }
 
@@ -117,7 +177,8 @@ public class Terminal {
         while(!valid)
         {
             System.out.print(prompt);
-            ret = sc.nextLine(); if (ret.length() < min || ret.length() > max)
+            ret = sc.nextLine();
+            if (ret.length() < min || ret.length() > max)
                 System.out.println("Input length must be between " + min + " and " + max + " characters");
             else
                 valid = true;
