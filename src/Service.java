@@ -1,13 +1,14 @@
 
-class Service {
+
+public class Service {
     String name;
     int code;
-    Double fee;
+    float fee;
     Boolean status;
 
     // ---- Constructors ----
     // makes service for DB Wrapper
-    public Service(int code, String name, Double fee, int status)
+    public Service(int code, String name, float fee, int status)
         throws InputException {
         String exceptionString = "";
 
@@ -40,7 +41,7 @@ class Service {
     }
 
     // makes new service -- uses first constructor
-    public Service (String name, Double fee)
+    public Service (String name, float fee)
         throws InputException {
         this(0, name, fee, 1);
         return;
@@ -55,7 +56,7 @@ class Service {
         this.code = code;
     }
 
-    private void setFee(Double fee) {
+    private void setFee(float fee) {
         this.fee = fee;
     }
 
@@ -71,7 +72,7 @@ class Service {
         return code;
     }
 
-    public double getFee() {
+    public float getFee() {
         return fee;
     }
 
