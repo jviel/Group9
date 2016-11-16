@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public class Transaction {
-
     // variables
     int idNumber;
     int patientID;
@@ -26,13 +25,18 @@ public class Transaction {
               dateTime = getTodayDateLong();
             }
 
-            if(!isValidLongDate(dateTime)) {
+            if (idNumber < 0 || idNumber > 999999999) {
+                exceptionString += "ID Number must be a nine-digit integer.\n";
+            }
+
+            if (!isValidLongDate(dateTime)) {
                 exceptionString += "Date-Time must be formatted in form " +
                     "MM-DD-YYYY HH-MM-SS.\n";
             }
 
-            if (idNumber < 0 || idNumber > 999999999) {
-                exceptionString += "ID Number must be a nine-digit integer.\n";
+            if (!isValidShortDate(serviceDate)) {
+                exceptionString += "Service Date must be formatted in form " +
+                    "MM-DD-YYYY.\n";
             }
 
             if (patientID < 0 || patientID > 999999999) {
@@ -77,7 +81,6 @@ public class Transaction {
             setDateTime(dateTime);
             setServiceDate(serviceDate);
             setComments(comments);
-
     }
 
     public Transaction(int patientID, int providerID, int serviceID,
@@ -96,16 +99,16 @@ public class Transaction {
       return patientID;
     }
 
-    public int getConsultationNumber() {
-      return consultationNumber;
-    }
-
     public int getProviderID() {
-      return providerID;
+        return providerID;
     }
 
     public int getServiceID() {
-      return serviceID;
+        return serviceID;
+    }
+
+    public int getConsultationNumber() {
+      return consultationNumber;
     }
 
     public String getDateTime() {
@@ -155,13 +158,25 @@ public class Transaction {
     }
 
 
-
     // helper functions
     private String getTodayDateLong() {
           Date now = new Date();
           SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss");
           return ft.format(now);
       }
+
+    private Boolean isValidShortDate(String date) {
+        if (date.length() != 10) {
+            return false;
+        }
+        SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
+        try {
+            Date tryDate = ft.parse(date);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
 
     private Boolean isValidLongDate(String date) {
           if (date.length() != 19) {
@@ -189,7 +204,4 @@ public class Transaction {
             (!(comments.isEmpty()) ? "Comments: " : "") +
             comments + "\n";
     }
-
-
-
 }

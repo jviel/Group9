@@ -32,7 +32,29 @@ public class TestTransaction {
         }
     }
 
+    @Test
+    public void testPatientIDNegative() {
+        boolean thrown = false;
+        try {
+            new Transaction(-1, 345678912, 456789, 567891234, "12-10-2345",
+                            "The service was great!");
+        } catch (InputException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+    }
 
+    @Test
+    public void testProviderIDNegative() {
+        boolean thrown = false;
+        try {
+            new Transaction(234567891, -1, 456789, 567891234, "12-10-2345",
+                            "The service was great!");
+        } catch (InputException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+    }
 
     @Test
     public void testServiceIDNegative() {
@@ -59,37 +81,61 @@ public class TestTransaction {
     }
 
     @Test
-    public void testDateNonNumeric() {
+    public void testConsultationNumberNegative() {
         boolean thrown = false;
         try {
-          new Transaction(345345345, 345678912, 453679, 567891234, "12-10-2345",
-                "Oh my god, the chocolate was so good last night... mmmm cocoa.... Oh how I am so happy with cocoa in my life.");
+            new Transaction(234567891, 345678912, 456789, -1, "12-10-2345",
+                            "The service was great!");
+        } catch (InputException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+    }
+    // tests constructor and isValidShortDate
+    @Test
+    public void testBadServiceDate() {
+        boolean thrown = false;
+        try {
+            new Transaction(345345345, 345678912, 453678559, 567891234, "11-12-19455",
+                            "The service was great!");
         } catch (InputException e) {
             thrown = true;
         }
         assertTrue(thrown);
     }
 
-  // more dateTime tests
+    // tests constructor and isValidLongDate
+    @Test
+    public void testBadDateTime() {
+        boolean thrown = false;
+        try {
+            new Transaction(123456789, 234567891, 345678912, 456789, 567891234, "09-08-1876 11:11:1111", "12-10-2345",
+                            "The service was great!");
+        } catch (InputException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+    }
 
     @Test
     public void testCommentsTooLong() {
         boolean thrown = false;
         try {
-          new Transaction(345345345, 345678912, 453678559, 567891234, "aa-bb-abdc",
-                "The service was great!");
+          new Transaction(345345345, 345678912, 453679, 567891234, "12-10-2345",
+                          "Oh my god, the chocolate was so good last night... mmmm cocoa.... Oh I am so happy with cocoa in my life.");
         } catch (InputException e) {
             thrown = true;
         }
         assertTrue(thrown);
     }
+
 
     // ---- Test setters and getters ----
     // all setters tested by their use in constructors
     @Test
     public void testIDNumber() {
         try {
-          Transaction transaction = new Transaction(123456789, 234567891, 345678912, 456789, 567891234, "09-08-1876 11:11:11", "12-10-2345", 
+          Transaction transaction = new Transaction(123456789, 234567891, 345678912, 456789, 567891234, "09-08-1876 11:11:11", "12-10-2345",
                 "The service was great!");
             int result = transaction.getIDNumber();
             assertEquals(123456789, result);
@@ -158,8 +204,6 @@ public class TestTransaction {
         }
     }
 
-
-
     @Test
     public void testServiceDate() {
         try {
@@ -184,6 +228,7 @@ public class TestTransaction {
         }
     }
 
+
     // ---- Test Private helper functions ----
     @Test
     public void testGetTodayDateLong() {
@@ -201,8 +246,7 @@ public class TestTransaction {
     }
 
 
-    // ---- Test overrides and helpers ----
-    // tests toString override
+    // ---- Test overrides ----
     @Test
     public void testToString() {
         try {
