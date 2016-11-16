@@ -1,4 +1,7 @@
+import com.psu.group9.Patient;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
 
 public class PatientTest {
     @org.junit.Test

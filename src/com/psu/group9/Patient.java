@@ -1,3 +1,4 @@
+package com.psu.group9;
 
 public class Patient extends Entity {
 
