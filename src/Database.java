@@ -678,8 +678,7 @@ public class Database {
         try {
             Statement stmt = conn.createStatement();
             String column = tableName.substring(0, tableName.length() - 1);
-            column = column.toUpperCase();
-            column += "_ID";
+            column += "ID";
 
             ResultSet rs = stmt.executeQuery(
                 "SELECT 1 FROM " + tableName + " WHERE " +
