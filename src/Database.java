@@ -27,7 +27,7 @@ public class Database {
 
         checkDatabase();
         
-        try {
+      /*  try {
 			Service n = new Service("Maerwerssagea", 677.590);
 			Provider p = new Provider("JJ", "AS", "DeD", "OR", "97233", 1);
 			System.out.print(addService(n));
@@ -37,7 +37,7 @@ public class Database {
 		} catch (InputException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
     }
 
     /*----Checks the database and creates tables during the first run---*/
@@ -219,10 +219,9 @@ public class Database {
                         rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
                         rs.getInt("FinancialStanding"), rs.getInt("Status"));
                 if(currentPatient.equals(newPatient)){
-                    System.out.println("Patient already exists.");
                     stmt.close();
                     rs.close();
-                    return -1;
+                    return -2;
                 }
             }
 
@@ -316,10 +315,9 @@ public class Database {
             while(rs.next()){
                 currentService = new Service(rs.getString("Name"), rs.getDouble("Fee"));
                 if(currentService.equals(newService)){
-                    System.out.println("Service already exists.");
                     stmt.close();
                     rs.close();
-                    return -1;
+                    return -2;
                 }
             }
 
@@ -405,10 +403,9 @@ public class Database {
                          rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
                          rs.getInt("Status"));
                  if(currentProvider.equals(newProvider)){
-                     System.out.println("Provider already exists.");
                      stmt.close();
                      rs.close();
-                     return -1;
+                     return -2;
                  }
              }
 
