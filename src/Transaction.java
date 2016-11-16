@@ -1,154 +1,183 @@
 package src;
 
+import java.util.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 public class Transaction {
 
     // variables
-	int idNumber;
-	int patientID;
-	int providerID;
-	int serviceID;
-	int consultationNumber;
-	String dateTime;
-	String serviceDate;
-	String comments;
+    int idNumber;
+    int patientID;
+    int providerID;
+    int serviceID;
+    int consultationNumber;
+    String dateTime;
+    String serviceDate;
+    String comments;
 
     // constructors
-	public Transaction(int idNumber, int patientID, int providerID, int serviceID, 
-			int consultationNumber, String dateTime, String serviceDate, 
-			String comments) throws InputException {
-	        String exceptionString = "";
+    public Transaction(int idNumber, int patientID, int providerID, int serviceID,
+        int consultationNumber, String dateTime, String serviceDate,
+        String comments) throws InputException {
+            String exceptionString = "";
 
-	        if (idNumber < 0 || idNumber > 999999999) {
-	            exceptionString += "ID Number must be a nine-digit integer.\n";
-	        }
-	        
-	        if (patientID < 0 || patientID > 999999999) {
-	            exceptionString += "Patient ID must be a nine-digit integer.\n";
-	        }
-	        
-	        if (consultationNumber < 0 || consultationNumber > 999999999) {
-	            exceptionString += "Consultation ID must be a nine-digit integer.\n";
-	        }
-	        
-	        if (providerID < 0 || providerID > 999999999) {
-	            exceptionString += "Provider ID must be a nine-digit integer.\n";
-	        }
-	        
-	        if (serviceID < 0 || serviceID > 999999) {
-	            exceptionString += "Service ID must be a six-digit integer.\n";
-	        }
+            if (dateTime == "") {
+              dateTime = getTodayDateLong();
+            }
 
-	        if (dateTime.length() != 19) {
-	            exceptionString += "Date and Time must be formatted MM-DD-YYYY HH:MM:SS.\n";
-	        }
+            if(!isValidLongDate(dateTime)) {
+                exceptionString += "Date-Time must be formatted in form " +
+                    "MM-DD-YYYY HH-MM-SS.\n";
+            }
 
-	        if (serviceDate.length() != 10) {
-	            exceptionString += "Service date must be formatted MM-DD-YYYY.\n";
-	        }
-	        
-	        if (comments.length() > 100) {
-	            exceptionString += "Comments may be no longer than 100 characters.\n";
-	        }
+            if (idNumber < 0 || idNumber > 999999999) {
+                exceptionString += "ID Number must be a nine-digit integer.\n";
+            }
 
-	        if (!(exceptionString.isEmpty())) {
-	            exceptionString = exceptionString.substring(0,
-	                exceptionString.length() -1);
-	            throw new InputException(exceptionString);
-	        }
+            if (patientID < 0 || patientID > 999999999) {
+                exceptionString += "Patient ID must be a nine-digit integer.\n";
+            }
 
-	        setIDNumber(idNumber);
-	        setPatientID(patientID);
-	        setProviderID(providerID);
-	        setServiceID(serviceID);
-	        setConsultationNumber(consultationNumber);
-	        setDateTime(dateTime);
-	        setServiceDate(serviceDate);
-	        setComments(comments); 
-	    
-	}
-	
-	public Transaction(int patientID, int providerID, int serviceID, 
-			int consultationNumber, String serviceDate, 
-			String comments) throws InputException {
-        this(0, patientID, providerID, serviceID, consultationNumber, "00-00-0000 00:00:00", serviceDate, comments);
+            if (consultationNumber < 0 || consultationNumber > 999999999) {
+                exceptionString += "Consultation ID must be a nine-digit integer.\n";
+            }
+
+            if (providerID < 0 || providerID > 999999999) {
+                exceptionString += "Provider ID must be a nine-digit integer.\n";
+            }
+
+            if (serviceID < 0 || serviceID > 999999) {
+                exceptionString += "Service ID must be a six-digit integer.\n";
+            }
+
+            if (dateTime.length() != 19) {
+                exceptionString += "Date and Time must be formatted MM-DD-YYYY HH:MM:SS.\n";
+            }
+
+            if (serviceDate.length() != 10) {
+                exceptionString += "Service date must be formatted MM-DD-YYYY.\n";
+            }
+
+            if (comments.length() > 100) {
+                exceptionString += "Comments may be no longer than 100 characters.\n";
+            }
+
+            if (!(exceptionString.isEmpty())) {
+                exceptionString = exceptionString.substring(0,
+                    exceptionString.length() -1);
+                throw new InputException(exceptionString);
+            }
+
+            setIDNumber(idNumber);
+            setPatientID(patientID);
+            setProviderID(providerID);
+            setServiceID(serviceID);
+            setConsultationNumber(consultationNumber);
+            setDateTime(dateTime);
+            setServiceDate(serviceDate);
+            setComments(comments);
+
+    }
+
+    public Transaction(int patientID, int providerID, int serviceID,
+        int consultationNumber, String serviceDate,
+        String comments) throws InputException {
+          this(0, patientID, providerID, serviceID, consultationNumber, "", serviceDate, comments);
+      }
+
+
+    // getters
+    public int getIDNumber() {
+      return idNumber;
+    }
+
+    public int getPatientID() {
+      return patientID;
+    }
+
+    public int getConsultationNumber() {
+      return consultationNumber;
+    }
+
+    public int getProviderID() {
+      return providerID;
+    }
+
+    public int getServiceID() {
+      return serviceID;
+    }
+
+    public String getDateTime() {
+      return dateTime;
+    }
+
+    public String getServiceDate() {
+      return serviceDate;
+    }
+
+    public String getComments() {
+      return comments;
     }
 
 
-	// getters
-	public int getIDNumber() {
-		return idNumber;
-	}
-	
-	public int getPatientID() {
-		return patientID;
-	}
-	
-	public int getConsultationNumber() {
-		return consultationNumber;
-	}
-	
-	public int getProviderID() {
-		return providerID;
-	}
-	
-	public int getServiceID() {
-		return serviceID;
-	}
-	
-	public String getDateTime() {
-		return dateTime;
-	}
-	
-	public String getServiceDate() {
-		return serviceDate;
-	}
-	
-	public String getComments() {
-		return comments;
-	}
-
-	
     // setters
-	private void setIDNumber(int idNumber) {
-		this.idNumber = idNumber;
-	}
-	
-	private void setPatientID(int patientID) {
-		this.patientID = patientID;
-	}
-	
-	private void setProviderID(int providerID) {
-		this.providerID = providerID;
-	}
-	
-	private void setServiceID(int serviceID) {
-		this.serviceID = serviceID;
-	}
-	
-	private void setConsultationNumber(int consultationNumber) {
-		this.consultationNumber = consultationNumber;
-	}
-	
-	private void setDateTime(String dateTime) {
-		this.dateTime = dateTime;
-	}
-	
-	private void setServiceDate(String serviceDate) {
-		this.serviceDate = serviceDate;
-	}
-	
-	private void setComments(String comments) {
-		this.comments = comments;
-	}
-	
+    private void setIDNumber(int idNumber) {
+      this.idNumber = idNumber;
+    }
+
+    private void setPatientID(int patientID) {
+      this.patientID = patientID;
+    }
+
+    private void setProviderID(int providerID) {
+      this.providerID = providerID;
+    }
+
+    private void setServiceID(int serviceID) {
+      this.serviceID = serviceID;
+    }
+
+    private void setConsultationNumber(int consultationNumber) {
+      this.consultationNumber = consultationNumber;
+    }
+
+    private void setDateTime(String dateTime) {
+      this.dateTime = dateTime;
+    }
+
+    private void setServiceDate(String serviceDate) {
+      this.serviceDate = serviceDate;
+    }
+
+    private void setComments(String comments) {
+      this.comments = comments;
+    }
+
 
 
     // helper functions
+    private String getTodayDateLong() {
+          Date now = new Date();
+          SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss");
+          return ft.format(now);
+      }
 
-
+    private Boolean isValidLongDate(String date) {
+          if (date.length() != 19) {
+              return false;
+          }
+          SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss");
+          try {
+              Date tryDate = ft.parse(date);
+              return true;
+          } catch(ParseException e) {
+              return false;
+          }
+      }
 
     // override toString
-	@Override
+    @Override
     public String toString() {
         return "Transaction ID: " + idNumber + "\n" +
             "Date-Time: " + dateTime + "\n" +
