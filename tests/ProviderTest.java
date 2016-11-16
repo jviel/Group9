@@ -115,7 +115,13 @@ public class ProviderTest {
 
     @org.junit.Test
     public void setName() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
 
+        String testName = "Donald J Trump";
+
+        TestProvider.setName(testName);
+
+        assertEquals("Name was not set.", testName, TestProvider.getName());
     }
 
     @org.junit.Test
@@ -130,28 +136,155 @@ public class ProviderTest {
     }
 
     @org.junit.Test
-    public void setAddress() throws Exception {
+    public void setNameEmpty() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
 
+        TestProvider.setName("");
+
+        String result = TestProvider.getName();
+
+        assertNotEquals("Name wasn't set properly", result, "");
+    }
+
+    @org.junit.Test
+    public void setAddress() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        String testAddress = "Trump Tower 2";
+
+        TestProvider.setAddress(testAddress);
+
+        assertEquals("Address was not set.", testAddress, TestProvider.getAddress());
+    }
+
+    @org.junit.Test
+    public void setAddressTooLong() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setAddress("abcdefghijklmnopqrstuvwxyz");
+
+        String result = TestProvider.getAddress();
+
+        assertNotEquals("Address wasn't set properly", result, "abcdefghijklmnopqrstuvwxyz");
+    }
+
+    @org.junit.Test
+    public void setAddressEmpty() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setAddress("");
+
+        String result = TestProvider.getAddress();
+
+        assertNotEquals("Address wasn't set properly", result, "");
     }
 
     @org.junit.Test
     public void setCity() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
 
+        String testCity = "Hillsboro";
+
+        TestProvider.setCity(testCity);
+
+        assertEquals("City was not set.", testCity, TestProvider.getCity());
+    }
+
+    @org.junit.Test
+    public void setCityTooLong() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setCity("abcdefghijklmnopqrstuvwxyz");
+
+        String result = TestProvider.getCity();
+
+        assertNotEquals("City wasn't set properly", result, "abcdefghijklmnopqrstuvwxyz");
+    }
+
+    @org.junit.Test
+    public void setCityEmpty() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setCity("");
+
+        String result = TestProvider.getCity();
+
+        assertNotEquals("City wasn't set properly", result, "");
     }
 
     @org.junit.Test
     public void setState() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
 
+        String testState = "OR";
+
+        TestProvider.setState(testState);
+
+        assertEquals("State was not set.", testState, TestProvider.getState());
+    }
+
+    @org.junit.Test
+    public void setStateTooLong() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setState("abcdefghijklmnopqrstuvwxyz");
+
+        String result = TestProvider.getState();
+
+        assertNotEquals("State wasn't set properly", result, "abcdefghijklmnopqrstuvwxyz");
+    }
+
+    @org.junit.Test
+    public void setStateEmpty() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setState("");
+
+        String result = TestProvider.getState();
+
+        assertNotEquals("State wasn't set properly", result, "");
     }
 
     @org.junit.Test
     public void setZip() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
 
+        String zip = "23451";
+
+        TestProvider.setZip(zip);
+
+        assertEquals("Zipcode was not set.", zip, TestProvider.getZip());
     }
 
     @org.junit.Test
-    public void setStatus() throws Exception {
+    public void setZipTooLong() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
 
+        TestProvider.setZip("123456");
+
+        String result = TestProvider.getZip();
+
+        assertNotEquals("Zipcode wasn't set properly", result, "123456");
+    }
+
+    @org.junit.Test
+    public void setZipEmpty() throws Exception {
+        final Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setZip("");
+
+        String result = TestProvider.getZip();
+
+        assertNotEquals("Zipcode wasn't set properly", result, "");
+    }
+
+    @org.junit.Test
+    public void testStatus() throws Exception {
+        Provider TestProvider = new Provider(123456789, "Donald Trump", "Trump Tower", "NYC", "NY", "12345", true);
+
+        TestProvider.setStatus(false);
+
+        assertEquals("Status was set incorrectly", false, TestProvider.getStatus());
     }
 
 }
