@@ -3,12 +3,12 @@ package src;
 public class Service {
     String name;
     int code;
-    Float fee;
+    float fee;
     Boolean status;
 
     // ---- Constructors ----
     // makes service for DB Wrapper
-    public Service(int code, String name, Float fee, int status)
+    public Service(int code, String name, float fee, int status)
         throws InputException {
         String exceptionString = "";
 
@@ -41,7 +41,7 @@ public class Service {
     }
 
     // makes new service -- uses first constructor
-    public Service (String name, Float fee)
+    public Service (String name, float fee)
         throws InputException {
         this(0, name, fee, 1);
         return;
@@ -56,7 +56,7 @@ public class Service {
         this.code = code;
     }
 
-    private void setFee(Float fee) {
+    private void setFee(float fee) {
         this.fee = fee;
     }
 
@@ -72,7 +72,7 @@ public class Service {
         return code;
     }
 
-    public Float getFee() {
+    public float getFee() {
         return fee;
     }
 

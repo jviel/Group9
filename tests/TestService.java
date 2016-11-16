@@ -133,9 +133,9 @@ public class TestService {
     public void testFee() {
         try {
             Service service = new Service("", 60.85f);
-            Float expectedResult = 60.85f;
-            Float actualResult = service.getFee();
-            assertEquals(expectedResult, actualResult);
+            float expectedResult = 60.85f;
+            float actualResult = service.getFee();
+            assertEquals(expectedResult, actualResult, 0.00000001);
         } catch (InputException e) {
             fail(e.getMessage());
         }
