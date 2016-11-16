@@ -6,8 +6,8 @@ import org.junit.runners.MethodSorters;
 
 import java.sql.*;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING);
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DBTest {
     Database db = new Database("database.db");
     Connection conn = null;	
