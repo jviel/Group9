@@ -1,4 +1,4 @@
-package src;
+package com.psu.group9;
 
 public class Service {
     String name;

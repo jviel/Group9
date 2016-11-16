@@ -1,4 +1,4 @@
-package src;
+package com.psu.group9;
 
 public class InputException extends Exception {
   public InputException() {}
