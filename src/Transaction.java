@@ -156,9 +156,9 @@ public class Transaction {
             "Provider ID: " + Integer.toString(providerID) + "\n" +
             "Patient ID: " + Integer.toString(patientID) + "\n" +
             "Service ID: " + Integer.toString(serviceID) + "\n" +
-            "Consult ID: " + Integer.toString(consultationNumber) + "\n" +
-            (!(comments.isEmpty()) ? "Comment: " : "") +
-            comments;
+            "Consultation Number: " + Integer.toString(consultationNumber) + "\n" +
+            (!(comments.isEmpty()) ? "Comments: " : "") +
+            comments + "\n";
     }
 
 
