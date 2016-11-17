@@ -16,7 +16,10 @@ FEATURES
 - Transactions
 - Provider directory
 
--
+ANDY DESIGN NOTES:
+- Should we repeat menu every time? Better way? Who cares?
+- Add, Update functions
+- Wheres my db yo?!
 */
 //
 
@@ -27,7 +30,7 @@ public class Terminal {
 
     static Scanner sc = new Scanner(System.in);
 
-    public static void main (String [] args){
+    public static void main(String [] args){
 
         /*
         create database - check validity
@@ -64,26 +67,6 @@ public class Terminal {
         }
     }
 
-    /**
-     * currently do not need
-
-    private static int menu(final String prompt){
-        int option = 0;
-
-        System.out.println(prompt);
-
-        if(sc.hasNextInt()){
-            option = sc.nextInt();
-            sc.nextLine();
-
-        } else {
-            sc.nextLine();
-        }
-
-
-        return option;
-    }
-    */
 
     /**
      * Virtualizes manager terminal
@@ -113,8 +96,14 @@ public class Terminal {
                 case 1: //List services
                         break;
                 case 2: //Add service
+                        System.out.println("Adding service...");
+                        Service service = getService();
+                        /* CALL DB TO ADD SERVICE
+                        *  GET ID IN RETURN
+                        *  PRINT TO USER*/
                         break;
                 case 3: //Update service
+                       // System.out.println("Please enter the new ");
                         break;
                 case 4: //Delete service
                         break;
@@ -137,9 +126,30 @@ public class Terminal {
         System.out.println("Exiting Manager Terminal...\n");
         //return?
     }
-   
-    private static void getService() throws src.InputException{
+    /**
+     * For creating a Service object with name and fee fields
+     *
+     * @return Constructed service with valid name and fee
+     */
+    private static Service getService(){
+        Service service = null;
+        boolean validInput = false;
 
+        while(!validInput) {
+            //Takes name and fee - database handles the rest for add, ID is passed separate for Update
+            String name = getString("Please enter the service name: ", 0, 21);
+            Float fee = getFloat("Please enter the fee: ", -1f, 1000f);
+
+            try {
+                service = new Service(0, name, fee, 1);
+                validInput = true;
+            } catch (InputException e) {
+                //Prompt exception, force valid input
+                System.out.println("Invalid input: " + e + "\n please try again..");
+            }
+        }
+
+        return service;
     }
 
     /**
