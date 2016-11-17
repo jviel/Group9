@@ -32,17 +32,15 @@ public class Database {
 
         checkDatabase();
         
-      /*  try {
-			Service n = new Service("Maerwerssagea", 677.590);
-			Provider p = new Provider("JJ", "AS", "DeD", "OR", "97233", 1);
-			System.out.print(addService(n));
-			System.out.print(updateService(100000, n));
-			System.out.print(removeService(100000));
-			System.out.print(addProvider(p));
-		} catch (InputException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
+        /*try {
+            Patient pat = new Patient("daa", "dass", "da", "da", "97233", 1,1);
+            //Boolean bool = updatePatient(2, pat);
+            addPatient(pat);
+            int k = 5;
+        } catch (InputException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }*/
     }
 
     /*----Checks the database and creates tables during the first run---*/
@@ -131,7 +129,7 @@ public class Database {
             checkColumns("Transactions", transactionColumns);
             checkColumns("Services", serviceColumns);      
 
-            /*---Get last used ID's---*/
+            /*---Get last used ID's. Set them to correct size---*/
             patientNum	= 100000000 + getRowsCount("Patients");
             providerNum	= 100000000 + getRowsCount("Providers");
             transactionNum = 100000000 + getRowsCount("Transactions");
@@ -152,8 +150,7 @@ public class Database {
     }
 
     /*----Checks for corrupted columns----*/
-    private void checkColumns(String tableName, String [] columns) 
-        throws SQLException{
+    private void checkColumns(String tableName, String [] columns) throws SQLException{
         DatabaseMetaData meta = conn.getMetaData();
         ResultSet columnSet = null;
 
@@ -167,33 +164,23 @@ public class Database {
     }
 
     /*---Performs executeUpdate of a given query---*/
-    private void execQuery(String query) {
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(query);
-            stmt.close();
-        }
-        catch(SQLException e) {
-            System.err.println(e.getMessage());
-        }
+    private void execQuery(String query) throws SQLException {
+    	Statement stmt = conn.createStatement();
+    	stmt.executeUpdate(query);
+    	stmt.close();
     }
 
     /*----Returns the row count of a specific table----*/
-    private int getRowsCount(String tableName) {
+    private int getRowsCount(String tableName) throws SQLException {
         Statement stmt = null;
         ResultSet rs = null;
         int rowsCount = 0;
 
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM " + tableName);
-            rowsCount = rs.getInt("total");
-            stmt.close();
-            rs.close();
-        }
-        catch(SQLException e) {
-            System.err.println(e.getMessage());
-        }
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM " + tableName);
+        rowsCount = rs.getInt("total");
+        stmt.close();
+        rs.close();
 
         return rowsCount;
     }   
@@ -212,41 +199,37 @@ public class Database {
             if(rs.next()){
                 exists = true;
             }
-
             stmt.close();
             rs.close();
         }
         catch(SQLException e) {
             System.err.println(e.getMessage());
         }
-
         return exists;
     }
 
-    /*----Adds a patient to the database----*/
+    /*----Adds a patient to the database, return ID----*/
     public int addPatient(Patient newPatient){
         PreparedStatement stmt = null;
         ResultSet rs = null;
-        Patient currentPatient = null;
 
         try {
-            //Check if the patient record already exists
-            stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND City=?");
+            //Check if a patient already exists in the database
+            stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND Address=? AND City=? AND State=? " +
+                                         "AND Zipcode=?");
             stmt.setString(1, newPatient.getName());
-            stmt.setString(2, newPatient.getCity());
+            stmt.setString(2, newPatient.getAddress());
+            stmt.setString(3, newPatient.getCity());
+            stmt.setString(4, newPatient.getState());
+            stmt.setString(5, newPatient.getZipcode());
             rs = stmt.executeQuery();
-
-            while(rs.next()){
-                currentPatient = new Patient(rs.getString("Name"), rs.getString("Address"),
-                        rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                        rs.getInt("FinancialStanding"), rs.getInt("Status"));
-                if(currentPatient.equals(newPatient)){
-                    stmt.close();
-                    rs.close();
-                    return -2;
-                }
+            
+            if(rs.next()){
+                stmt.close();
+                rs.close();
+                return -2;
             }
-
+ 
             //Otherwise adds to database and returns patient id
             stmt = conn.prepareStatement("INSERT INTO Patients VALUES (?,?,?,?,?,?,?,?)");
             stmt.setInt(1, patientNum);
@@ -267,17 +250,14 @@ public class Database {
             System.err.println("Error occured in the database while adding the patient data.");
             return -1;
         }
-        catch (InputException e) {
-            System.err.println("Invalid patient data. The patient will not be added.");
-            return -1;
-        }
         return patientNum - 1;
     }
 
     /*----Updates patient data in the database----*/
     public Boolean updatePatient(int ID, Patient patient){
         PreparedStatement stmt = null;
-
+        ResultSet rs = null;
+                
         try {
             if(!entryExists("Patients", ID)){
                 return false;
@@ -285,30 +265,21 @@ public class Database {
             
             // We check to make sure that what the Patient is being updated to isn't already a
             // duplicate of something in the DB.
-            
-            stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND Address=?");
+            stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND Address=? AND City=? AND State=? " +
+                                        "AND Zipcode=?");
             stmt.setString(1, patient.getName());
             stmt.setString(2, patient.getAddress());
+            stmt.setString(3, patient.getCity());
+            stmt.setString(4, patient.getState());
+            stmt.setString(5, patient.getZipcode());        
+            rs = stmt.executeQuery();
             
-            ResultSet rs = stmt.executeQuery();
-            
-            while(rs.next()) {
-            	try {
-            	    Patient currentPatient = new Patient(rs.getString("Name"), rs.getString("Address"),
-                        rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                        rs.getInt("FinancialStanding"), rs.getInt("Status"));
-	                if(currentPatient.equals(patient)){
-	                    stmt.close();
-	                    rs.close();
-	                    return false;
-	                }
-            	}
-            	catch(InputException e) {
-            		System.err.println(e.getMessage());
-            	}
+            if(rs.next()){
+                stmt.close();
+                rs.close();
+                return false;
             }
-            
-            stmt.close();
+ 
             stmt = conn.prepareStatement("UPDATE Patients SET Name=?, Address=?, City=?, " +
                                         "State=?, Zipcode=?, FinancialStanding=?, Status=? " +
                                         "WHERE PatientID=?");
@@ -322,12 +293,13 @@ public class Database {
             stmt.setInt(8, ID);
             stmt.executeUpdate();
             stmt.close();
+            rs.close();
         } 
         catch (SQLException e) {
             System.err.println("Error occured in the database while updating the patient data.");
             return false;
         }
-        return true;	
+        return true;
     }
 
     /*---Sets patient Status=0, marking as deleted---*/
@@ -341,6 +313,7 @@ public class Database {
             stmt = conn.createStatement();
             stmt.executeUpdate("UPDATE Patients SET Status = 0 " +
                                 "WHERE PatientID = " + Integer.toString(ID));
+            stmt.close();
         } 
         catch (SQLException e) {
             System.err.println("Error occurred in the database while removing a patient.");
@@ -348,7 +321,8 @@ public class Database {
         }
         return true;
     }
-    
+
+    /*---Sets patient FinancialStanding=0, marking as suspended---*/
     public Boolean suspendPatient(int ID) {
     	Statement stmt = null;
     	
@@ -368,6 +342,7 @@ public class Database {
     	return true;
     }
     
+    /*---Sets patient FinancialStanding=1, marking as active---*/
     public Boolean reinstatePatient(int ID) {
         Statement stmt = null;
     	
@@ -387,27 +362,23 @@ public class Database {
     	return true;
     }
     
-    /*---Adds a service to the database---*/
+    /*---Adds a service to the database, return ID---*/
     public int addService(Service newService) {
     	PreparedStatement stmt = null;
         ResultSet rs = null;
-        Service currentService = null;
 
         try {
             //Check if the service record already exists
-            stmt = conn.prepareStatement("SELECT * FROM Services WHERE Name=?");
+            stmt = conn.prepareStatement("SELECT * FROM Services WHERE Name=? AND Fee=?");
             stmt.setString(1, newService.getName());
+            stmt.setFloat(2, newService.getFee());
             rs = stmt.executeQuery();
-       
-            while(rs.next()){
-                currentService = new Service(rs.getString("Name"), rs.getFloat("Fee"));
-                if(currentService.equals(newService)){
-                    stmt.close();
-                    rs.close();
-                    return -2;
-                }
+            
+            if(rs.next()){
+                stmt.close();
+                return -2;
             }
-
+       
             //Otherwise adds to database and returns service id
             stmt = conn.prepareStatement("INSERT INTO Services VALUES (?,?,?,?)");
             stmt.setInt(1, serviceNum);
@@ -424,17 +395,14 @@ public class Database {
             System.err.println("Error occured in the database while adding the service data.");
             return -1;
         }
-        catch (InputException e) {
-            System.err.println("Invalid service data. The service will not be added.");
-            return -1;
-        }
         return serviceNum - 1;
     }
     
     /*---Updates service data in the database---*/
     public Boolean updateService(int ID, Service service){
     	PreparedStatement stmt = null;
-
+    	ResultSet rs = null;
+    	
         try {
             if(!entryExists("Services", ID)){
                 return false;
@@ -442,28 +410,16 @@ public class Database {
             
             // We check to make sure that the updated service isn't an exact duplicate of
             // something already in the DB.
-            
-            stmt = conn.prepareStatement("SELECT * FROM Services WHERE Name=?");
+            stmt = conn.prepareStatement("SELECT * FROM Services WHERE Name=? AND Fee=?");
             stmt.setString(1, service.getName());
+            stmt.setFloat(2, service.getFee());
+            rs = stmt.executeQuery();
             
-            ResultSet rs = stmt.executeQuery();
-            
-            while(rs.next()) {
-            	try {
-            	    Service currentService = new Service(rs.getInt("ServiceID"), rs.getString("Name"), 
-            	    		rs.getFloat("Fee"), rs.getInt("Status"));
-	                if(currentService.equals(service)){
-	                    stmt.close();
-	                    rs.close();
-	                    return false;
-	                }
-            	}
-            	catch(InputException e) {
-            		System.err.println(e.getMessage());
-            	}
+            if(rs.next()){
+                rs.close();
+                stmt.close();
+                return false;
             }
-            
-            stmt.close();
 
             stmt = conn.prepareStatement("UPDATE Services SET Name=?, Fee=? WHERE ServiceID=?");
             stmt.setString(1, service.getName());
@@ -498,30 +454,28 @@ public class Database {
          return true;
     }
     
-    /*---Adds a provider to the database---*/
+    /*---Adds a provider to the database, return ID---*/
     public int addProvider(Provider newProvider){
     	 PreparedStatement stmt = null;
          ResultSet rs = null;
-         Provider currentProvider = null;
-
+        
          try {
              //Check if the provider record already exists
-             stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND City=?");
-             stmt.setString(1, newProvider.getName());
-             stmt.setString(2, newProvider.getCity());
-             rs = stmt.executeQuery();
-
-             while(rs.next()){
-                 currentProvider = new Provider(rs.getString("Name"), rs.getString("Address"),
-                         rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                         rs.getInt("Status"));
-                 if(currentProvider.equals(newProvider)){
-                     stmt.close();
-                     rs.close();
-                     return -2;
-                 }
-             }
-
+            stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND Address=? AND City=? AND State=? " +
+                                         "AND Zipcode=?");
+            stmt.setString(1, newProvider.getName());
+            stmt.setString(2, newProvider.getAddress());
+            stmt.setString(3, newProvider.getCity());
+            stmt.setString(4, newProvider.getState());
+            stmt.setString(5, newProvider.getZipcode());
+            rs = stmt.executeQuery();
+            
+            if(rs.next()){
+                stmt.close();
+                rs.close();
+                return -2;
+            }
+            
              //Otherwise adds to database and returns provider id
              stmt = conn.prepareStatement("INSERT INTO Providers VALUES (?,?,?,?,?,?,?)");
              stmt.setInt(1, providerNum);
@@ -541,15 +495,14 @@ public class Database {
              System.err.println("Error occured in the database while adding the provider data.");
              return -1;
          }
-         catch (InputException e) {
-             System.err.println("Invalid provider data. The provider will not be added.");
-             return -1;
-         }
          return providerNum - 1;
     }
+    
+    /*---Updates provider data in the database---*/
     public Boolean updateProvider(int ID, Provider provider){
         PreparedStatement stmt = null;
-
+        ResultSet rs = null;
+        
         try {
             if(!entryExists("Patients", ID)){
                 return false;
@@ -557,30 +510,22 @@ public class Database {
             
             // We check to make sure that what the Patient is being updated to isn't already a
             // duplicate of something in the DB.
-            
-            stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND Address=?");
+            stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND Address=? AND City=? AND State=? " +
+                                         "AND Zipcode=?");
             stmt.setString(1, provider.getName());
             stmt.setString(2, provider.getAddress());
+            stmt.setString(3, provider.getCity());
+            stmt.setString(4, provider.getState());
+            stmt.setString(5, provider.getZipcode());
+            rs = stmt.executeQuery();
             
-            ResultSet rs = stmt.executeQuery();
-            
-            while(rs.next()) {
-            	try {
-            	    Provider currentProvider = new Provider(rs.getString("Name"), rs.getString("Address"),
-                        rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                        rs.getInt("Status"));
-	                if(currentProvider.equals(provider)){
-	                    stmt.close();
-	                    rs.close();
-	                    return false;
-	                }
-            	}
-            	catch(InputException e) {
-            		System.err.println(e.getMessage());
-            	}
+            if(rs.next()){
+                stmt.close();
+                rs.close();
+                return false;
             }
             
-            stmt.close();
+            //Otherwise update data
             stmt = conn.prepareStatement("UPDATE Providers SET Name=?, Address=?, City=?, " +
                                         "State=?, Zipcode=?, Status=? " +
                                         "WHERE ProviderID=?");
@@ -594,6 +539,7 @@ public class Database {
             stmt.setInt(7, ID);
             stmt.executeUpdate();
             stmt.close();
+            rs.close();
         } 
         catch (SQLException e) {
             System.err.println("Error occured in the database while updating the provider data.");
@@ -602,6 +548,7 @@ public class Database {
         return true;	
     }
     
+    /*---Sets provider Status=0, marking as deleted---*/
     public Boolean removeProvider(int ID){
         Statement stmt = null;
 
@@ -620,6 +567,7 @@ public class Database {
         return true;
     }  
 
+    /////Unused
     public void addPatients(String filename) {
         String line;
         Patient currentPatient;
@@ -684,7 +632,8 @@ public class Database {
 
         return;
     }
-
+    
+    ///Unused
     public void addProviders(String filename) {
         String line;
         Provider currentProvider;
@@ -751,6 +700,7 @@ public class Database {
         return;
     }
 
+    ///Unused
     public void addServices(String filename) {
         String line;
         Service currentService;
@@ -812,7 +762,8 @@ public class Database {
 
         return;
     }
-
+    
+    ////Not sure if needed
     private Boolean entryExistsAndIsActive(String tableName, int ID) {
         try {
             Statement stmt = conn.createStatement();
@@ -834,14 +785,16 @@ public class Database {
 
         return false;
     }
-
+    
+    ///Do we need to print it here on in the terminal?
     public void printAllPatients() {
         Statement stmt = null;
         Patient currentPatient;
+        
         try {
             stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery (
-                    "SELECT * FROM Patients");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Patients");
+                    
             while(rs.next()) {
                 currentPatient = new Patient(rs.getInt("PatientID"),
                                              rs.getString("Name"),
@@ -958,7 +911,8 @@ public class Database {
 
         return transactionNum - 1;
     }
-
+    
+    ///Unused
     public void addTransactions(String filename) {
         String line;
         Transaction currentTransaction;
@@ -1020,6 +974,7 @@ public class Database {
         return;
     }
     
+    ///Not sure if needed
     public Boolean updateTransaction(int ID, Transaction updateTransaction) {
         PreparedStatement pStatement = null;
 
@@ -1100,28 +1055,26 @@ public class Database {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
     }
-
+    
+    /*---Returns a vector of patient or provider objects---*/
     private Vector<Entity> getEntityByID(String table, int ID) {
+        Statement stmt = null;
+        ResultSet rs = null;
         String IDColumn = table;
         IDColumn = IDColumn.substring(0, IDColumn.length() - 1) + "ID";
         Vector<Entity> returnVec = new Vector<Entity>();
 
         try {
-            Statement stmt = conn.createStatement();
-
-            ResultSet rs = stmt.executeQuery(
-                "SELECT * FROM " + table + " WHERE " + IDColumn + " = " +
-                Integer.toString(ID)
-            );
-
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM " + table + " WHERE " + 
+                                    IDColumn + " = " + Integer.toString(ID));
 
             // Because the function can build a vector of Patients or Providers, we
             // need to have different conditional blocks for whether we grabbed from
             // the Patient row or the Provider row.
             while(rs.next()) {
-                try {
-                    if(IDColumn.matches("PatientID")) {
-                        returnVec.add( new Patient(
+                if(IDColumn.matches("PatientID")) {
+                    returnVec.add( new Patient(
                             rs.getInt(IDColumn),
                             rs.getString("Name"),
                             rs.getString("Address"),
@@ -1147,22 +1100,16 @@ public class Database {
                         );
                     }
                 }
-                catch(InputException e) {
-                    System.out.println("Somehow, an invalid entry is in the DB.");
-                }
-            }
-
             stmt.close();
         }
-        catch(SQLException e) {
-            System.err.println(e.getMessage());
+        catch(SQLException | InputException e) {
+            System.err.println("Error occured in the database while retrieving patients/providers.");
         }
-
+         
         return returnVec;
     }
 
-    private Vector<Entity> getEntityByString(String table, String column, 
-            String criteria) {
+    private Vector<Entity> getEntityByString(String table, String column, String criteria) {
         Vector<Entity> returnVec = new Vector<Entity>();
         String IDColumn = table.substring(0, table.length() - 1) + "ID";
 
