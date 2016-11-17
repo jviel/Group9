@@ -153,8 +153,49 @@ public class DBTest {
     	    assertFalse(status);
     }
     
-    // Provider Unit Tests
+    // We add another patient and suspend it.
+    @Test
+        public void A009suspendPatientTest() {
+	    	int ID;
+	    	try {
+	            Patient newPatient = new Patient("Deadbeat", "123 Skid Row", "Portland", "OR", "97233", 1, 1);
+	            ID = db.addPatient(newPatient);
+	            assertTrue(ID > 99999999);
+	            Boolean suspended = db.suspendPatient(ID);
+	            assertTrue(suspended);
+	    	}
+	        catch (InputException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	        }	
+	    }
     
+    // We suspend a nonexistent ID.
+    @Test
+        public void A010suspendPatientTest2() {
+    	    Boolean suspended = db.suspendPatient(189012980);
+    	    assertFalse(suspended);
+    	}
+    
+    // We reinstate Deadbeat.
+    @Test
+        public void A011reinstatePatientTest() {
+    	    Vector<Entity> vec = db.getPatientsByName("Deadbeat");
+    	    int ID = vec.get(0).getID();
+    	    Boolean reinstated = db.reinstatePatient(ID);
+    	    assertTrue(reinstated);
+    	}
+    
+    // We reinstate a nonexistent ID.
+    @Test
+	    public void A012reinstatePatientTest() {
+		    int ID = 108121241;
+		    Boolean reinstated = db.reinstatePatient(ID);
+		    assertFalse(reinstated);
+		}
+    
+    
+    // Provider Unit Tests
 
     @Test
         public void B001addProviderTest() {
