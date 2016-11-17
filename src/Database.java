@@ -282,6 +282,33 @@ public class Database {
             if(!entryExists("Patients", ID)){
                 return false;
             }
+            
+            // We check to make sure that what the Patient is being updated to isn't already a
+            // duplicate of something in the DB.
+            
+            stmt = conn.prepareStatement("SELECT * FROM Patients WHERE Name=? AND Address=?");
+            stmt.setString(1, patient.getName());
+            stmt.setString(2, patient.getAddress());
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            while(rs.next()) {
+            	try {
+            	    Patient currentPatient = new Patient(rs.getString("Name"), rs.getString("Address"),
+                        rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
+                        rs.getInt("FinancialStanding"), rs.getInt("Status"));
+	                if(currentPatient.equals(patient)){
+	                    stmt.close();
+	                    rs.close();
+	                    return false;
+	                }
+            	}
+            	catch(InputException e) {
+            		System.err.println(e.getMessage());
+            	}
+            }
+            
+            stmt.close();
             stmt = conn.prepareStatement("UPDATE Patients SET Name=?, Address=?, City=?, " +
                                         "State=?, Zipcode=?, FinancialStanding=?, Status=? " +
                                         "WHERE PatientID=?");
@@ -374,6 +401,31 @@ public class Database {
             if(!entryExists("Services", ID)){
                 return false;
             }
+            
+            // We check to make sure that the updated service isn't an exact duplicate of
+            // something already in the DB.
+            
+            stmt = conn.prepareStatement("SELECT * FROM Services WHERE Name=?");
+            stmt.setString(1, service.getName());
+            
+            ResultSet rs = stmt.executeQuery();
+            
+            while(rs.next()) {
+            	try {
+            	    Service currentService = new Service(rs.getInt("ServiceID"), rs.getString("Name"), 
+            	    		rs.getFloat("Fee"), rs.getInt("Status"));
+	                if(currentService.equals(service)){
+	                    stmt.close();
+	                    rs.close();
+	                    return false;
+	                }
+            	}
+            	catch(InputException e) {
+            		System.err.println(e.getMessage());
+            	}
+            }
+            
+            stmt.close();
 
             stmt = conn.prepareStatement("UPDATE Services SET Name=?, Fee=? WHERE ServiceID=?");
             stmt.setString(1, service.getName());
@@ -464,6 +516,34 @@ public class Database {
             if(!entryExists("Providers", ID)){
                 return false;
             }
+	            
+	         // We check to make sure that what the Patient is being updated to isn't already a
+	         // duplicate of something in the DB.
+	        
+	         stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND Address=?");
+	         stmt.setString(1, provider.getName());
+	         stmt.setString(2, provider.getAddress());
+	        
+	         ResultSet rs = stmt.executeQuery();
+	        
+	         while(rs.next()) {
+	          	 try {
+	        	     Provider currentProvider = new Provider(rs.getString("Name"), rs.getString("Address"),
+	                     rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"), 
+	                     rs.getInt("Status"));
+	                 if(currentProvider.equals(provider)){
+	                     stmt.close();
+	                     rs.close();
+	                     return false;
+	                 }
+	        	 }
+	        	 catch(InputException e) {
+	        		 System.err.println(e.getMessage());
+	        	 }
+	         }
+	        
+	        stmt.close();
+            
             stmt = conn.prepareStatement("UPDATE Providers SET Name=?, Address=?," +
                 "City=?, State=?, Zipcode=?, Status=?, WHERE ProviderID=?");
             stmt.setString(1, provider.getName());
@@ -540,7 +620,7 @@ public class Database {
 
                 lineNumber++;
             }
-            
+            reader.close();
         }
         catch(IOException e) {
             System.out.println(e.getMessage());
@@ -605,6 +685,8 @@ public class Database {
                 lineNumber++;
             }
             
+            reader.close();
+            
         }
         catch(IOException e) {
             System.out.println(e.getMessage());
@@ -664,6 +746,8 @@ public class Database {
 
                 lineNumber++;
             }
+            
+            reader.close();
             
         }
         catch(IOException e) {
@@ -774,7 +858,6 @@ public class Database {
 
     public int addTransaction(Transaction newTransaction) {
         PreparedStatement pStatement = null;
-        Statement stmt = null;
 
         try {
             // We need to ensure that the Provider, Patient, and Service IDs
@@ -871,6 +954,7 @@ public class Database {
 
                 lineNumber++;
             }
+            reader.close();
             
         }
         catch(IOException e) {
@@ -961,32 +1045,6 @@ public class Database {
             System.err.println(e.getClass().getName() + ": " + e.getMessage());
         }
     }
-
-    private int getHighestTransaction() {
-        Statement stmt = null;
-
-        try {
-            stmt = conn.createStatement();
-
-            ResultSet rs = stmt.executeQuery(
-                "SELECT count(*) FROM Transactions"
-            );
-
-            if(rs.getInt(1) == 0) {
-                return -1;
-            }
-
-            rs = stmt.executeQuery(
-                "SELECT MAX(ConsultID) FROM Transactions"
-            );
-
-            stmt.close();
-            return rs.getInt(1);
-        }
-        catch(Exception e) {
-            return -1;
-        }
-    }       
 
     private Vector<Entity> getEntityByID(String table, int ID) {
         String IDColumn = table;
