@@ -65,7 +65,7 @@ public class DBTest {
         public void addServiceTest(){
             int ID;	
             try {
-                Service newService = new Service("Test Service", 60.5);
+                Service newService = new Service("Test Service", 60.5F);
                 ID = db.addService(newService);
                 assertTrue(ID > 99999);
 
