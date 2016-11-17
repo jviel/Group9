@@ -1,6 +1,5 @@
 import static org.junit.Assert.*;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -34,6 +33,8 @@ public class DBTest {
     	    	e.printStackTrace();
     	    }
     }
+    
+    // Patient Unit Tests
 
     @Test
         public void A001addPatientTest() {
@@ -137,10 +138,151 @@ public class DBTest {
             Boolean removed = db.removePatient(ID);
             assertTrue(removed);
         }
+    
+    // We get the patient that was removed and verify that it was actually set to Inactive.
+    @Test
+        public void A007removePatientVerify() {
+    	    Vector<Entity> patientVector = db.getPatientsByName("Test name");
+    	    assertFalse(patientVector.get(0).getEnrollmentStatus());
+    }
+    
+    // We attempt to remove an ID that is not in the database.
+    @Test
+        public void A008removePatientTest2() {
+    	    Boolean status = db.removePatient(891279199);
+    	    assertFalse(status);
+    }
+    
+    // Provider Unit Tests
+    
 
+    @Test
+        public void B001addProviderTest() {
+            int ID;	
+            try {
+            	Provider newProvider = new Provider("Test Provider", "24 Dartmouth Dr", "Framingham", "MA", "01701", 1);
+                ID = db.addProvider(newProvider);
+                assertTrue(ID > 99999999);
+
+            } catch (InputException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }		
+        }
+
+    // We add a duplicate here.
+    @Test
+        public void B002addProviderTest2() {
+            int ID;	
+            try {
+                Provider newProvider = new Provider("Test Provider", "24 Dartmouth Dr", "Framingham", "MA", "01701", 1);
+                ID = db.addProvider(newProvider);
+                assertTrue(ID < 0);
+
+            } catch (InputException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }		
+        }
+    
+    // We add a *close* match, meaning one that has the same name and address but different city.
+    
+    @Test
+        public void B003addProviderTest3() {
+    	int ID;
+    	try {
+    		Provider newProvider = new Provider("Test Provider", "24 Dartmouth Dr", "Southborough", "MA", "01772", 1);
+    		ID = db.addProvider(newProvider);
+    		assertTrue(ID > 99999999);
+    	}
+    	catch (InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    // We update the first provider, setting it equal to "Test Provider2", "25 Dartmouth Dr", "Framingham", "MA", "01701", 1.
+    @Test
+        public void B004updateProviderTest() {
+    	Vector<Entity> providerVec = db.getProvidersByName("Test Provider");
+    	if(!(providerVec.isEmpty())) {
+    		int ID = providerVec.get(0).getID();
+    		
+    		try {
+    		    Provider updateProvider = new Provider("Test Provider2", "25 Dartmouth Dr", "Framingham", "MA", "01701", 1);
+    		    Boolean updated = db.updateProvider(ID, updateProvider);
+    		    assertTrue(updated);
+    		}
+    		catch(InputException e) {
+    			fail("InputException thrown.");
+    			e.printStackTrace();
+    		}
+    	}
+    	
+    	else {
+    		fail("Patient not found.");
+    	}
+    	
+    }
+    
+    // We update that same provider, setting it equal to "Test Provider", "24 Dartmouth Dr", "Southborough", "MA", "01772", 1.
+    // Note that this is an exact duplicate of the Provider added in B003addProviderTest3, so the database should refuse it.
+    
+    @Test
+    public void B005updateProviderTest2() {
+    	Vector<Entity> ProviderVec = db.getProvidersByName("Test Provider2");
+    	if(!(ProviderVec.isEmpty())) {
+    		int ID = ProviderVec.get(0).getID();
+    		
+    		try {
+    		    Provider updateProvider = new Provider("Test Provider", "24 Dartmouth Dr", "Southborough", "MA", "01772", 1);
+    		    Boolean updated = db.updateProvider(ID, updateProvider);
+    		    assertFalse(updated);
+    		}
+    		catch(InputException e) {
+    			fail("InputException thrown.");
+    			e.printStackTrace();
+    		}
+    	}
+    	
+    	else {
+    		fail("Provider not found.");
+    	}
+    }
+    
+    // We set that Provider to Inactive.
+    @Test
+        public void B006removeProviderTest(){
+    	    Vector<Entity> ProviderVector = db.getProvidersByName("Test Provider");
+    	    int ID = ProviderVector.get(0).getID();
+    	    
+            Boolean removed = db.removeProvider(ID);
+            assertTrue(removed);
+        }
+    
+    // We get the Provider that was removed and verify that it was actually set to Inactive.
+    @Test
+        public void B007removeProviderVerify() {
+    	    Vector<Entity> ProviderVector = db.getProvidersByName("Test Provider");
+    	    assertFalse(ProviderVector.get(0).getEnrollmentStatus());
+    }
+    
+    // We attempt to remove an ID that is not in the database.
+    @Test
+        public void B008removeProviderTest2() {
+    	    Boolean status = db.removeProvider(891279199);
+    	    assertFalse(status);
+    }
+    
+    
+    
+    
+    
+    
+    // Service Unit Tests
+    
     // We add a Service to the DB.
     @Test
-        public void A007addServiceTest(){
+        public void A222addServiceTest(){
             int ID;	
             try {
                 Service newService = new Service("Test Service", 60.5F);
@@ -152,6 +294,7 @@ public class DBTest {
                 e.printStackTrace();
             }		
         }
+    
 
     // I don't think that we need this test, but I'm keeping it just in case. We'll comment it out in the meantime.
     /*
