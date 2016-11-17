@@ -273,13 +273,9 @@ public class DBTest {
     	    assertFalse(status);
     }
     
-    
-    
-    
-    
-    
     // Service Unit Tests
     
+    // Adding a service.
     @Test
     public void C001addServiceTest() {
         int ID;	
@@ -396,7 +392,185 @@ public class DBTest {
 		    Boolean status = db.removeService(891270);
 		    assertFalse(status);
 	}
+	
+	// Transaction Unit Tests
+	
+	// Adding a Transaction.
+	
+    @Test
+    public void D001addTransactionTest() {
+        int ID;	
+        try {
+            Transaction newTransaction = new Transaction("11-01-2016", 100000000, 100000000, 100000, 100000000, "Stuff");
+            ID = db.addTransaction(newTransaction);
+            assertTrue(ID > 99999999);
 
+        } catch (InputException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }		
+    }
+
+    // Note that duplicates *CAN* be added, so we don't check for those.
+
+    // We add a transaction with an inactive PatientID.
+    @Test
+    public void D002addTransactionTest2() {
+    	int ID;
+    	try {
+    		Transaction newTransaction = new Transaction("11-01-2016", 100000001, 100000000, 100000, 100000000, "Stuff");
+    		ID = db.addTransaction(newTransaction);
+    		assertTrue(ID < 0);
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    // We add a transaction with a nonexistent PatientID.
+    @Test
+    public void D003addTransactionTest3() {
+    	int ID;
+    	try {
+    		Transaction newTransaction = new Transaction("11-01-2016", 100198211, 100000000, 100000, 100000000, "Stuff");
+    		ID = db.addTransaction(newTransaction);
+    		assertTrue(ID < 0);
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    // We add a transaction with an inactive ProviderID.
+    @Test
+    public void D004addTransactionTest4() {
+    	int ID;
+    	try {
+    		Transaction newTransaction = new Transaction("11-01-2016", 100000000, 100000001, 100000, 100000000, "Stuff");
+    		ID = db.addTransaction(newTransaction);
+    		assertTrue(ID < 0);
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    // We add a transaction with a nonexistent ProviderID.
+    @Test
+    public void D005addTransactionTest5() {
+    	int ID;
+    	try {
+    		Transaction newTransaction = new Transaction("11-01-2016", 100198211, 100000001, 100000, 100000000, "Stuff");
+    		ID = db.addTransaction(newTransaction);
+    		assertTrue(ID < 0);
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    // We add a transaction with an inactive ServiceID.
+    @Test
+    public void D006addTransactionTest6() {
+    	int ID;
+    	try {
+    		Transaction newTransaction = new Transaction("11-01-2016", 100000000, 100000000, 100001, 100000000, "Stuff");
+    		ID = db.addTransaction(newTransaction);
+    		assertTrue(ID < 0);
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    // We add a transaction with a nonexistent ServiceID.
+    @Test
+    public void D007addTransactionTest7() {
+    	int ID;
+    	try {
+    		Transaction newTransaction = new Transaction("11-01-2016", 100000000, 100000000, 198237, 100000000, "Stuff");
+    		ID = db.addTransaction(newTransaction);
+    		assertTrue(ID < 0);
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    	}
+    }
+    
+    /*
+	// We update the first service, setting it equal to "Test Service2", 94.00F.
+	@Test
+    public void C004updateServiceTest() {
+	Vector<Service> serviceVec = db.getServicesByName("Test Service");
+	if(!(serviceVec.isEmpty())) {
+		int ID = serviceVec.get(0).getID();
+		
+		try {
+		    Service updateService = new Service("Test Service2", 94.00F);
+		    Boolean updated = db.updateService(ID, updateService);
+		    assertTrue(updated);
+		}
+		catch(InputException e) {
+			fail("InputException thrown.");
+			e.printStackTrace();
+		}
+	}
+	
+	else {
+		fail("Service not found.");
+	}
+	
+}
+
+	// We update that same service, setting it equal to "Test Service", 54.00.
+	// Note that this is an exact duplicate of the service added in C003addServiceTest3, so the database should refuse it.
+	
+	@Test
+	public void C005updateServiceTest2() {
+		Vector<Service> serviceVec = db.getServicesByName("Test Service2");
+		if(!(serviceVec.isEmpty())) {
+			int ID = serviceVec.get(0).getID();
+			
+			try {
+			    Service updateService = new Service("Test Service", 54.00F);
+			    Boolean updated = db.updateService(ID, updateService);
+			    assertFalse(updated);
+			}
+			catch(InputException e) {
+				fail("InputException thrown.");
+				e.printStackTrace();
+			}
+		}
+		
+		else {
+			fail("Service not found.");
+		}
+	}
+
+	// We set that service to Inactive.
+	@Test
+    public void C006removeServiceTest(){
+	    Vector<Service> serviceVector = db.getServicesByName("Test Service");
+	    int ID = serviceVector.get(0).getID();
+	    
+        Boolean removed = db.removeService(ID);
+        assertTrue(removed);
+    }
+
+	// We get the service that was removed and verify that it was actually set to Inactive.
+	@Test
+	    public void C007removeServiceVerify() {
+		    Vector<Service> serviceVector = db.getServicesByName("Test Service");
+		    assertFalse(serviceVector.get(0).getStatus());
+	}
+
+	// We attempt to remove an ID that is not in the database.
+	@Test
+	    public void C008removeServiceTest2() {
+		    Boolean status = db.removeService(891270);
+		    assertFalse(status);
+	}
+	
     // I don't think that we need this test, but I'm keeping it just in case. We'll comment it out in the meantime.
     /*
     @Test 
