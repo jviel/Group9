@@ -80,12 +80,12 @@ public class DBTest {
     	}
     }
     
-    // We update the first patient, setting it equal to "Test name", "4501 NE Sandy Blvd.", "Hillsboro", "OR", "97123", 1, 1.
+    // We update the first service, setting it equal to "Test name", "4501 NE Sandy Blvd.", "Hillsboro", "OR", "97123", 1, 1.
     @Test
         public void A004updatePatientTest() {
-    	Vector<Entity> patientVec = db.getPatientsByName("Test name");
-    	if(!(patientVec.isEmpty())) {
-    		int ID = patientVec.get(0).getID();
+    	Vector<Entity> serviceVec = db.getPatientsByName("Test name");
+    	if(!(serviceVec.isEmpty())) {
+    		int ID = serviceVec.get(0).getID();
     		
     		try {
     		    Patient updatePatient = new Patient("Test name2", "4500 NE Sandy Blvd.", "Hillsboro", "OR", "97123", 1, 1);
@@ -104,14 +104,14 @@ public class DBTest {
     	
     }
     
-    // We update that same patient, setting it equal to "Test name", "4500 NE Sandy Blvd.", "Hillsboro", "OR", "97123", 1, 1).
-    // Note that this is an exact duplicate of the patient added in A003addPatientTest3, so the database should refuse it.
+    // We update that same service, setting it equal to "Test name", "4500 NE Sandy Blvd.", "Hillsboro", "OR", "97123", 1, 1).
+    // Note that this is an exact duplicate of the service added in A003addPatientTest3, so the database should refuse it.
     
     @Test
     public void A005updatePatientTest2() {
-    	Vector<Entity> patientVec = db.getPatientsByName("Test name2");
-    	if(!(patientVec.isEmpty())) {
-    		int ID = patientVec.get(0).getID();
+    	Vector<Entity> serviceVec = db.getPatientsByName("Test name2");
+    	if(!(serviceVec.isEmpty())) {
+    		int ID = serviceVec.get(0).getID();
     		
     		try {
     		    Patient updatePatient = new Patient("Test name", "4500 NE Sandy Blvd.", "Hillsboro", "OR", "97123", 1, 1);
@@ -129,21 +129,21 @@ public class DBTest {
     	}
     }
     
-    // We set that patient to Inactive.
+    // We set that service to Inactive.
     @Test
         public void A006removePatientTest(){
-    	    Vector<Entity> patientVector = db.getPatientsByName("Test name");
-    	    int ID = patientVector.get(0).getID();
+    	    Vector<Entity> serviceVector = db.getPatientsByName("Test name");
+    	    int ID = serviceVector.get(0).getID();
     	    
             Boolean removed = db.removePatient(ID);
             assertTrue(removed);
         }
     
-    // We get the patient that was removed and verify that it was actually set to Inactive.
+    // We get the service that was removed and verify that it was actually set to Inactive.
     @Test
         public void A007removePatientVerify() {
-    	    Vector<Entity> patientVector = db.getPatientsByName("Test name");
-    	    assertFalse(patientVector.get(0).getEnrollmentStatus());
+    	    Vector<Entity> serviceVector = db.getPatientsByName("Test name");
+    	    assertFalse(serviceVector.get(0).getEnrollmentStatus());
     }
     
     // We attempt to remove an ID that is not in the database.
@@ -280,31 +280,132 @@ public class DBTest {
     
     // Service Unit Tests
     
-    // We add a Service to the DB.
     @Test
-        public void A222addServiceTest(){
-            int ID;	
-            try {
-                Service newService = new Service("Test Service", 60.5F);
-                ID = db.addService(newService);
-                assertTrue(ID > 99999);
+    public void C001addServiceTest() {
+        int ID;	
+        try {
+            Service newService = new Service("Test Service", 45.00F);
+            ID = db.addService(newService);
+            assertTrue(ID > 99999);
 
-            } catch (InputException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }		
-        }
-    
+        } catch (InputException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }		
+    }
+
+	// We add a duplicate here.
+	@Test
+    public void C002addServiceTest2() {
+        int ID;	
+        try {
+            Service newService = new Service("Test Service", 45.00F);
+            ID = db.addService(newService);
+            assertTrue(ID < 0);
+
+        } catch (InputException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }			
+    }
+
+	// We add a *close* match, meaning one that has the same name but different fee.
+	
+	@Test
+    public void C003addServiceTest3() {
+	int ID;
+	try {
+		Service newService = new Service("Test Service", 54.00F);
+		ID = db.addService(newService);
+		assertTrue(ID > 99999);
+	}
+	catch (InputException e) {
+		e.printStackTrace();
+	}
+}
+
+	// We update the first service, setting it equal to "Test Service2", 94.00F.
+	@Test
+    public void C004updateServiceTest() {
+	Vector<Service> serviceVec = db.getServicesByName("Test Service");
+	if(!(serviceVec.isEmpty())) {
+		int ID = serviceVec.get(0).getID();
+		
+		try {
+		    Service updateService = new Service("Test Service2", 94.00F);
+		    Boolean updated = db.updateService(ID, updateService);
+		    assertTrue(updated);
+		}
+		catch(InputException e) {
+			fail("InputException thrown.");
+			e.printStackTrace();
+		}
+	}
+	
+	else {
+		fail("Service not found.");
+	}
+	
+}
+
+	// We update that same service, setting it equal to "Test Service", 54.00.
+	// Note that this is an exact duplicate of the service added in C003addServiceTest3, so the database should refuse it.
+	
+	@Test
+	public void C005updateServiceTest2() {
+		Vector<Service> serviceVec = db.getServicesByName("Test Service2");
+		if(!(serviceVec.isEmpty())) {
+			int ID = serviceVec.get(0).getID();
+			
+			try {
+			    Service updateService = new Service("Test Service", 54.00F);
+			    Boolean updated = db.updateService(ID, updateService);
+			    assertFalse(updated);
+			}
+			catch(InputException e) {
+				fail("InputException thrown.");
+				e.printStackTrace();
+			}
+		}
+		
+		else {
+			fail("Service not found.");
+		}
+	}
+
+	// We set that service to Inactive.
+	@Test
+    public void C006removeServiceTest(){
+	    Vector<Service> serviceVector = db.getServicesByName("Test Service");
+	    int ID = serviceVector.get(0).getID();
+	    
+        Boolean removed = db.removeService(ID);
+        assertTrue(removed);
+    }
+
+	// We get the service that was removed and verify that it was actually set to Inactive.
+	@Test
+	    public void C007removeServiceVerify() {
+		    Vector<Service> serviceVector = db.getServicesByName("Test Service");
+		    assertFalse(serviceVector.get(0).getStatus());
+	}
+
+	// We attempt to remove an ID that is not in the database.
+	@Test
+	    public void C008removeServiceTest2() {
+		    Boolean status = db.removeService(891270);
+		    assertFalse(status);
+	}
 
     // I don't think that we need this test, but I'm keeping it just in case. We'll comment it out in the meantime.
     /*
     @Test 
-        public void A005removeRow(){
+        public void C005removeRow(){
             try {
             	Class.forName("org.sqlite.JDBC");
             	conn = DriverManager.getConnection("jdbc:sqlite:database.db");
-                PreparedStatement stmt = conn.prepareStatement("DELETE FROM Patients WHERE PatientID=?");
-                stmt.setInt(1, patientID);
+                PreparedStatement stmt = conn.prepareStatement("DELETE FROM Services WHERE ServiceID=?");
+                stmt.setInt(1, serviceID);
                 stmt.executeUpdate();
 
                 stmt = conn.prepareStatement("DELETE FROM Services WHERE ServiceID=?");

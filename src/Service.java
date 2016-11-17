@@ -1,17 +1,17 @@
 class Service {
+    int ID;
     String name;
-    int code;
     float fee;
     Boolean status;
 
     // ---- Constructors ----
     // makes service for DB Wrapper
-    public Service(int code, String name, float fee, int status)
+    public Service(int ID, String name, float fee, int status)
         throws InputException {
         String exceptionString = "";
 
-        if (code < 0 || code > 999999) {
-            exceptionString += "Code must be a six-digit integer.\n";
+        if (ID < 0 || ID > 999999) {
+            exceptionString += "ID must be a six-digit integer.\n";
         }
 
         if (name.length() > 20) {
@@ -29,7 +29,7 @@ class Service {
         }
 
         setName(name);
-        setCode(code);
+        setID(ID);
         setFee(fee);
         if (status == 1) {
             setStatus(true);
@@ -46,12 +46,12 @@ class Service {
     }
 
     // ---- Setters and getters ---
+    private void setID(int ID) {
+        this.ID = ID;
+    }
+    
     private void setName(String name) {
         this.name = name;
-    }
-
-    private void setCode(int code) {
-        this.code = code;
     }
 
     private void setFee(float fee) {
@@ -61,13 +61,13 @@ class Service {
     private void setStatus(Boolean status) {
         this.status = status;
     }
+    
+    public int getID() {
+        return ID;
+    }
 
     public String getName() {
         return name;
-    }
-
-    public int getCode() {
-        return code;
     }
 
     public float getFee() {
@@ -82,7 +82,7 @@ class Service {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        return sb.append(code).append("\t")
+        return sb.append(ID).append("\t")
                  .append(name).append("\t$")
                  .append(fee).toString();
     }
