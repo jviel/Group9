@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import src.InputException;
+import src.Service;
+
 public class TestService {
 
     // test constructor that makes new objects
