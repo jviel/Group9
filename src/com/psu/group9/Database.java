@@ -1,3 +1,6 @@
+package com.psu.group9;
+import com.psu.group9.Patient;
+
 import java.sql.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -237,9 +240,9 @@ public class Database {
             rs = stmt.executeQuery();
 
             while(rs.next()){
-                currentPatient = new Patient(rs.getString("Name"), rs.getString("Address"),
+                currentPatient = new Patient(rs.getInt("PatientID"), rs.getString("Name"), rs.getString("Address"),
                         rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                        rs.getInt("FinancialStanding"), rs.getInt("Status"));
+                        rs.getInt("Status"), rs.getInt("FinancialStanding"));
                 if(currentPatient.equals(newPatient)){
                     stmt.close();
                     rs.close();
@@ -254,7 +257,7 @@ public class Database {
             stmt.setString(3, newPatient.getAddress());
             stmt.setString(4, newPatient.getCity());
             stmt.setString(5, newPatient.getState());
-            stmt.setString(6, newPatient.getZipcode());
+            stmt.setString(6, newPatient.getZip());
             stmt.setBoolean(7, true);
             stmt.setBoolean(8, true);
             stmt.executeUpdate();
@@ -294,7 +297,7 @@ public class Database {
             
             while(rs.next()) {
             	try {
-            	    Patient currentPatient = new Patient(rs.getString("Name"), rs.getString("Address"),
+            	    Patient currentPatient = new Patient(rs.getInt("PatientID"), rs.getString("Name"), rs.getString("Address"),
                         rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
                         rs.getInt("FinancialStanding"), rs.getInt("Status"));
 	                if(currentPatient.equals(patient)){
@@ -316,9 +319,9 @@ public class Database {
             stmt.setString(2, patient.getAddress());
             stmt.setString(3, patient.getCity());
             stmt.setString(4, patient.getState());
-            stmt.setString(5, patient.getZipcode());
+            stmt.setString(5, patient.getZip());
             stmt.setBoolean(6, patient.getFinancialStanding());
-            stmt.setBoolean(7, patient.getEnrollmentStatus());
+            stmt.setBoolean(7, patient.getStatus());
             stmt.setInt(8, ID);
             stmt.executeUpdate();
             stmt.close();
@@ -512,9 +515,9 @@ public class Database {
              rs = stmt.executeQuery();
 
              while(rs.next()){
-                 currentProvider = new Provider(rs.getString("Name"), rs.getString("Address"),
+                 currentProvider = new Provider(rs.getInt("ProviderID"), rs.getString("Name"), rs.getString("Address"),
                          rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                         rs.getInt("Status"));
+                         rs.getInt("Status") != 0);
                  if(currentProvider.equals(newProvider)){
                      stmt.close();
                      rs.close();
@@ -529,7 +532,7 @@ public class Database {
              stmt.setString(3, newProvider.getAddress());
              stmt.setString(4, newProvider.getCity());
              stmt.setString(5, newProvider.getState());
-             stmt.setString(6, newProvider.getZipcode());
+             stmt.setString(6, newProvider.getZip());
              stmt.setBoolean(7, true);
              stmt.executeUpdate();
              providerNum++;
@@ -566,9 +569,9 @@ public class Database {
             
             while(rs.next()) {
             	try {
-            	    Provider currentProvider = new Provider(rs.getString("Name"), rs.getString("Address"),
+            	    Provider currentProvider = new Provider(rs.getInt("ProviderID"), rs.getString("Name"), rs.getString("Address"),
                         rs.getString("City"), rs.getString("State"), rs.getString("Zipcode"),
-                        rs.getInt("Status"));
+                        rs.getInt("Status") != 0);
 	                if(currentProvider.equals(provider)){
 	                    stmt.close();
 	                    rs.close();
@@ -589,8 +592,8 @@ public class Database {
             stmt.setString(2, provider.getAddress());
             stmt.setString(3, provider.getCity());
             stmt.setString(4, provider.getState());
-            stmt.setString(5, provider.getZipcode());
-            stmt.setBoolean(6, provider.getEnrollmentStatus());
+            stmt.setString(5, provider.getZip());
+            stmt.setBoolean(6, provider.getStatus());
             stmt.setInt(7, ID);
             stmt.executeUpdate();
             stmt.close();
@@ -637,6 +640,7 @@ public class Database {
                 // Individual line exception try.
                 try {
                     currentPatient = new Patient(
+                                            0,
                                             splitLine[0], // Name
                                             splitLine[1], // Address
                                             splitLine[2], // City
@@ -702,12 +706,13 @@ public class Database {
                 // Individual line exception try.
                 try {
                     currentProvider = new Provider(
+                                            0,
                                             splitLine[0], // Name
                                             splitLine[1], // Address
                                             splitLine[2], // City
                                             splitLine[3], // State
                                             splitLine[4], // Zipcode
-                                            1             // Enrollment Status
+                                            true          // Enrollment Status
                                           );
                     currentProviderID = addProvider(currentProvider);
 
@@ -876,7 +881,7 @@ public class Database {
                                              rs.getString("City"),
                                              rs.getString("State"),
                                              rs.getString("Zipcode"),
-                                             rs.getInt("Status"));
+                                             rs.getInt("Status") != 0);
                 System.out.println(currentProvider + "\n");
             }
 
@@ -940,11 +945,11 @@ public class Database {
             pStatement.setInt(1, transactionNum);
             pStatement.setString(2, newTransaction.getDateTime());
             pStatement.setString(3, toSQLDate(newTransaction.getServiceDate()));
-            pStatement.setString(4, newTransaction.getComment());
+            pStatement.setString(4, newTransaction.getComments());
             pStatement.setInt(5, newTransaction.getProviderID());
             pStatement.setInt(6, newTransaction.getPatientID());
             pStatement.setInt(7, newTransaction.getServiceID());
-            pStatement.setInt(8, newTransaction.getConsultID());
+            pStatement.setInt(8, newTransaction.getConsultationNumber());
 
             pStatement.executeUpdate();
             transactionNum++;
@@ -976,11 +981,11 @@ public class Database {
                 // Individual line exception try.
                 try {
                     currentTransaction = new Transaction(
-                            splitLine[0],                      // Service Date
-                            Integer.parseInt(splitLine[1]),    // Provider ID 
+                            Integer.parseInt(splitLine[0]),    // Consult ID
+                            Integer.parseInt(splitLine[1]),    // Provider ID
                             Integer.parseInt(splitLine[2]),    // Patient ID
                             Integer.parseInt(splitLine[3]),    // Service ID
-                            Integer.parseInt(splitLine[4]),    // Consult ID
+                            splitLine[4],                      // Service Date
                             splitLine[5]                       // Comment
                                      );
                     currentTransactionID = addTransaction(currentTransaction);
@@ -1054,11 +1059,11 @@ public class Database {
 
             pStatement.setString(1, updateTransaction.getDateTime());
             pStatement.setString(2, toSQLDate(updateTransaction.getServiceDate()));
-            pStatement.setString(3, updateTransaction.getComment());
+            pStatement.setString(3, updateTransaction.getComments());
             pStatement.setInt(4, updateTransaction.getProviderID());
             pStatement.setInt(5, updateTransaction.getPatientID());
             pStatement.setInt(6, updateTransaction.getServiceID());
-            pStatement.setInt(7, updateTransaction.getConsultID());
+            pStatement.setInt(7, updateTransaction.getConsultationNumber());
 
             pStatement.executeUpdate();
             pStatement.close();
@@ -1082,12 +1087,12 @@ public class Database {
             while(rs.next()) {
                 currentTransaction = new Transaction(
                         rs.getInt("TransactionID"),
-                        rs.getString("DateTime"),
-                        toOutputDate(rs.getString("ServiceDate")),
-                        rs.getInt("ProviderID"),
                         rs.getInt("PatientID"),
+                        rs.getInt("ProviderID"),
                         rs.getInt("ServiceID"),
                         rs.getInt("ConsultID"),
+                        rs.getString("DateTime"),
+                        toOutputDate(rs.getString("ServiceDate")),
                         rs.getString("Comment"));
                 System.out.println(currentTransaction + "\n");
             }
@@ -1142,7 +1147,7 @@ public class Database {
                             rs.getString("City"),
                             rs.getString("State"),
                             rs.getString("Zipcode"),
-                            rs.getInt("Status")
+                            rs.getInt("Status") != 0
                             )
                         );
                     }
@@ -1201,7 +1206,7 @@ public class Database {
                             rs.getString("City"),
                             rs.getString("State"),
                             rs.getString("Zipcode"),
-                            rs.getInt("Status")
+                            rs.getInt("Status") != 0
                             )
                         );
                     }
@@ -1396,12 +1401,12 @@ public class Database {
                 try {
                     returnVec.add( new Transaction(
                             rs.getInt("TransactionID"),
-                            rs.getString("DateTime"),
-                            toOutputDate(rs.getString("ServiceDate")),
                             rs.getInt("ProviderID"),
                             rs.getInt("PatientID"),
                             rs.getInt("ServiceID"),
                             rs.getInt("ConsultID"),
+                            rs.getString("DateTime"),
+                            toOutputDate(rs.getString("ServiceDate")),
                             rs.getString("Comment")
                             )
                         );
@@ -1438,12 +1443,12 @@ public class Database {
                 try {
                     returnVec.add( new Transaction(
                             rs.getInt("TransactionID"),
-                            rs.getString("DateTime"),
-                            toOutputDate(rs.getString("ServiceDate")),
                             rs.getInt("ProviderID"),
                             rs.getInt("PatientID"),
                             rs.getInt("ServiceID"),
                             rs.getInt("ConsultID"),
+                            rs.getString("DateTime"),
+                            toOutputDate(rs.getString("ServiceDate")),
                             rs.getString("Comment")
                             )
                         );
@@ -1532,7 +1537,7 @@ public class Database {
                             rs.getString("City"),
                             rs.getString("State"),
                             rs.getString("Zipcode"),
-                            rs.getInt("Status")
+                            rs.getInt("Status") != 0
                             )
                         );
                     }
@@ -1622,12 +1627,12 @@ public class Database {
                 try {
                     returnVec.add( new Transaction(
                         rs.getInt("TransactionID"),
-                        rs.getString("DateTime"),
-                        toOutputDate(rs.getString("ServiceDate")),
                         rs.getInt("ProviderID"),
                         rs.getInt("PatientID"),
                         rs.getInt("ServiceID"),
                         rs.getInt("ConsultID"),
+                        rs.getString("DateTime"),
+                        toOutputDate(rs.getString("ServiceDate")),
                         rs.getString("Comment")
                         )
                     );

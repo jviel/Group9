@@ -11,6 +11,13 @@ public class Patient extends Entity {
         setFinancialStanding(newFinancialStanding);
     }
 
+    public Patient(int newIdNumber, String newName, String newAddress, String newCity,
+                   String newState, String newZip, int newStatus, int newFinancialStanding)
+            throws InputException {
+        super(newIdNumber, newName, newAddress, newCity, newState, newZip , newStatus != 0);
+        setFinancialStanding(newFinancialStanding != 0);
+    }
+
     public boolean getFinancialStanding() {
         return financialStanding;
     }
