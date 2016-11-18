@@ -1,11 +1,7 @@
-import com.psu.group9.InputException;
-import com.psu.group9.Service;
+import com.psu.group9.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-
-import src.InputException;
-import src.Service;
 
 public class TestService {
 
