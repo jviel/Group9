@@ -3,6 +3,7 @@ import com.psu.group9.*;
 import static org.junit.Assert.*;
 
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -23,9 +24,6 @@ import java.util.Vector;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DBTest {
     Database db = new Database("testDB.db");
-    int patientID = 100000001;    //When tested with a clean DB. Will refer to Test name in addPatientTest
-    int serviceID = 100000;        //When tested with a clean DB. Will refer to Test service in addServiceTest
-    int dummyID = 1;
     
     @Test
     public void A0000redoDatabase() {
@@ -631,7 +629,7 @@ public class DBTest {
         }
     */
     
-    @AfterClass
+    @BeforeClass
     public static void removeDB() {
         // Delete the database if it doesn't already exist.
         Path dbPath = Paths.get("testDB.db");
@@ -669,17 +667,6 @@ public class DBTest {
                                 true            // Financial Standing
                                 );
                         currentPatientID = db.addPatient(currentPatient);
-
-                        if(currentPatientID != -1) {
-                            System.out.println("Added " + currentPatient.getName() +
-                            " to database. ID = " + currentPatientID);
-                        }
-    
-                        else {
-                            System.out.println("Tried to add " +
-                                    currentPatient.getName() + 
-                                    ", but patient already exists.");
-                        }
                     }
                     
                     catch(InputException e) {
