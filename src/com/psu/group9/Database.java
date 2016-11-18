@@ -822,7 +822,7 @@ public class Database {
                         rs.getString("City"),
                         rs.getString("State"),
                         rs.getString("Zipcode"),
-                        rs.getInt("Status"));
+                        rs.getBoolean("Status"));
                 System.out.println(currentProvider + "\n");
             }
             rs.close();
@@ -1033,8 +1033,8 @@ public class Database {
             while(rs.next()) {
                 currentTransaction = new Transaction(
                         rs.getInt("TransactionID"),
-                        rs.getInt("ProviderID"),
                         rs.getInt("PatientID"),
+                        rs.getInt("ProviderID"),
                         rs.getInt("ServiceID"),
                         rs.getInt("ConsultID"),
                         rs.getString("DateTime"),
@@ -1087,7 +1087,7 @@ public class Database {
                                 rs.getString("City"),
                                 rs.getString("State"),
                                 rs.getString("Zipcode"),
-                                rs.getInt("Status")
+                                rs.getBoolean("Status")
                                 )
                             );
                 }
@@ -1140,7 +1140,7 @@ public class Database {
                                 rs.getString("City"),
                                 rs.getString("State"),
                                 rs.getString("Zipcode"),
-                                rs.getInt("Status")
+                                rs.getBoolean("Status")
                                 )
                             );
                 }
@@ -1316,13 +1316,13 @@ public class Database {
 
             while(rs.next()) {
                 returnVec.add( new Transaction(
-                            toOutputDate(rs.getString("ServiceDate")),
-                            rs.getInt("ProviderID"),
+                            rs.getInt("TransactionID"),
                             rs.getInt("PatientID"),
+                            rs.getInt("ProviderID"),
                             rs.getInt("ServiceID"),
                             rs.getInt("ConsultID"),
-                            rs.getInt("TransactionID"),
                             rs.getString("DateTime"),
+                            toOutputDate(rs.getString("ServiceDate")),
                             rs.getString("Comment")
                             )
                         );
@@ -1352,8 +1352,8 @@ public class Database {
             while(rs.next()) {
                 returnVec.add( new Transaction(
                             rs.getInt("TransactionID"),
-                            rs.getInt("ProviderID"),
                             rs.getInt("PatientID"),
+                            rs.getInt("ProviderID"),
                             rs.getInt("ServiceID"),
                             rs.getInt("ConsultID"),
                             rs.getString("DateTime"),
@@ -1440,7 +1440,7 @@ public class Database {
                                 rs.getString("City"),
                                 rs.getString("State"),
                                 rs.getString("Zipcode"),
-                                rs.getInt("Status")
+                                rs.getBoolean("Status")
                                 )
                             );
                 }
@@ -1519,13 +1519,13 @@ public class Database {
 
             while (rs.next()) {
                 returnVec.add( new Transaction(
-                            rs.getInt("TransactionID"),
-                            rs.getString("DateTime"),
-                            toOutputDate(rs.getString("ServiceDate")),
-                            rs.getInt("ProviderID"),
+                            rs.getInt("TransactionID"), 
                             rs.getInt("PatientID"),
+                            rs.getInt("ProviderID"),
                             rs.getInt("ServiceID"),
                             rs.getInt("ConsultID"),
+                            rs.getString("DateTime"),
+                            toOutputDate(rs.getString("ServiceDate")),
                             rs.getString("Comment")
                             )
                         );
