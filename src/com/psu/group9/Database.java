@@ -2,9 +2,6 @@ package com.psu.group9;
 import com.psu.group9.Patient;
 
 import java.sql.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Vector;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -13,9 +10,9 @@ import java.text.ParseException;
 public class Database {
     int patientNum;
     int serviceNum;
-    int	transactionNum;
-    int	providerNum;
-    Connection 	conn = null;
+    int    transactionNum;
+    int    providerNum;
+    Connection     conn = null;
 
     //Constructor
     public Database(String dbName) {
@@ -24,7 +21,7 @@ public class Database {
         //Try to make connection with the database
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(dbName);		
+            conn = DriverManager.getConnection(dbName);        
         } 
         catch (ClassNotFoundException | SQLException e) {
             System.err.println("Connection with the database failed.");
@@ -123,10 +120,10 @@ public class Database {
             checkColumns("Services", serviceColumns);      
 
             /*---Get last used ID's. Set them to correct size---*/
-            patientNum	= 100000000 + getRowsCount("Patients");
-            providerNum	= 100000000 + getRowsCount("Providers");
+            patientNum    = 100000000 + getRowsCount("Patients");
+            providerNum    = 100000000 + getRowsCount("Providers");
             transactionNum = 100000000 + getRowsCount("Transactions");
-            serviceNum 	= 100000 + getRowsCount("Services");
+            serviceNum     = 100000 + getRowsCount("Services");
 
             patientSet.close();
             serviceSet.close();
@@ -425,7 +422,7 @@ public class Database {
             System.err.println("Error occured in the database while updating the service data.");
             return false;
         }
-        return true;	
+        return true;    
     }
 
     /*---Sets service Status=0, marking as deleted---*/
@@ -538,7 +535,7 @@ public class Database {
             System.err.println("Error occured in the database while updating the provider data.");
             return false;
         }
-        return true;	
+        return true;    
     }
 
     /*---Sets provider Status=0, marking as deleted---*/
@@ -560,203 +557,7 @@ public class Database {
         return true;
     }  
 
-    /////Unused
-    /*public void addPatients(String filename) {
-      String line;
-      Patient currentPatient;
-      int currentPatientID;
-      int lineNumber = 1;
-
-    // Fatal exception try.
-    try {
-    BufferedReader reader = new BufferedReader(
-    new FileReader(filename)
-    );
-
-    while((line = reader.readLine()) != null) {
-    String [] splitLine = line.split(",");
-    // Individual line exception try.
-    try {
-    currentPatient = new Patient(
-    splitLine[0], // Name
-    splitLine[1], // Address
-    splitLine[2], // City
-    splitLine[3], // State
-    splitLine[4], // Zipcode
-    1,            // Enrollment Status
-    1             // Financial Standing
-    );
-    currentPatientID = addPatient(currentPatient);
-
-    if(currentPatientID != -1) {
-    System.out.println("Added " + currentPatient.getName() +
-    " to database. ID = " +
-    currentPatientID);
-    }
-
-    else {
-    System.out.println("Tried to add " +
-    currentPatient.getName() + 
-    ", but patient already exists.");
-    }
-    }
-    catch(InputException e) {
-    System.out.println("Error for " + splitLine[0] + ": " +
-    e.getMessage());
-    }
-    catch(ArrayIndexOutOfBoundsException e) {
-    System.out.println("ArrayIndexOutOfBounds exception on line " +
-    Integer.toString(lineNumber));
-    }
-    catch(NumberFormatException e) {
-    System.out.println("NumberFormatException on line " +
-    Integer.toString(lineNumber));
-    }
-
-
-    lineNumber++;
-    }
-    reader.close();
-    }
-    catch(IOException e) {
-    System.out.println(e.getMessage());
-    return;
-    }
-
-    return;
-    }
-
-    ///Unused
-    /*public void addProviders(String filename) {
-    String line;
-    Provider currentProvider;
-    int currentProviderID;
-    int lineNumber = 1;
-
-    // Fatal exception try.
-    try {
-    BufferedReader reader = new BufferedReader(
-    new FileReader(filename)
-    );
-
-    while((line = reader.readLine()) != null) {
-    String [] splitLine = line.split(",");
-    // Individual line exception try.
-    try {
-    currentProvider = new Provider(
-    splitLine[0], // Name
-    splitLine[1], // Address
-    splitLine[2], // City
-    splitLine[3], // State
-    splitLine[4], // Zipcode
-    1             // Enrollment Status
-    );
-    currentProviderID = addProvider(currentProvider);
-
-    if(currentProviderID != -1) {
-    System.out.println("Added " + currentProvider.getName() +
-    " to database. ID = " +
-    currentProviderID);
-    }
-
-    else {
-    System.out.println("Tried to add " +
-    currentProvider.getName() + 
-    ", but provider already exists.");
-    }
-    }
-    catch(InputException e) {
-    System.out.println("Error for " + splitLine[0] + ": " +
-    e.getMessage());
-    }
-    catch(ArrayIndexOutOfBoundsException e) {
-    System.out.println("ArrayIndexOutOfBounds exception on line " +
-    Integer.toString(lineNumber));
-    }
-    catch(NumberFormatException e) {
-    System.out.println("NumberFormatException on line " +
-    Integer.toString(lineNumber));
-    }
-
-
-    lineNumber++;
-    }
-
-    reader.close();
-
-    }
-    catch(IOException e) {
-    System.out.println(e.getMessage());
-    return;
-    }
-
-    return;
-    }
-
-    ///Unused
-    /*public void addServices(String filename) {
-    String line;
-    Service currentService;
-    int currentServiceID;
-    int lineNumber = 1;
-
-    // Fatal exception try.
-    try {
-    BufferedReader reader = new BufferedReader(
-    new FileReader(filename)
-    );
-
-    while((line = reader.readLine()) != null) {
-    String [] splitLine = line.split(",");
-    // Individual line exception try.
-    try {
-    currentService = new Service(
-    splitLine[0],                  // Name
-    Float.parseFloat(splitLine[1]) // Price
-    );
-    currentServiceID = addService(currentService);
-
-    if(currentServiceID != -1) {
-    System.out.println("Added " + currentService.getName() +
-    " to database. ID = " +
-    currentServiceID);
-    }
-
-    else {
-    System.out.println("Tried to add " +
-    currentService.getName() + 
-    ", but service already exists.");
-    }
-    }
-    catch(InputException e) {
-    System.out.println("Error for " + splitLine[0] + ": " +
-    e.getMessage());
-    }
-    catch(ArrayIndexOutOfBoundsException e) {
-    System.out.println("ArrayIndexOutOfBounds exception on line " +
-    Integer.toString(lineNumber));
-    }
-    catch(NumberFormatException e) {
-    System.out.println("NumberFormatException on line " +
-    Integer.toString(lineNumber));
-    }
-
-
-    lineNumber++;
-    }
-
-    reader.close();
-
-    }
-    catch(IOException e) {
-    System.out.println(e.getMessage());
-    return;
-    }
-
-    return;
-    }
-    */
-
+    
     /*---Checks if an entry exists and is active---*/
     private Boolean entryExistsAndIsActive(String tableName, int ID) throws SQLException {
         Statement stmt = null;
@@ -769,9 +570,11 @@ public class Database {
                 column + " = " + Integer.toString(ID) + " AND Status = 1");
 
         if(rs.next()) {
+            stmt.close();
             return true;
         }
-
+        
+        stmt.close();
         return false;
     }
 
