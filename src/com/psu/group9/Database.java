@@ -131,7 +131,7 @@ public class Database {
             if(consultRs.next()){
                 consultNum = consultRs.getInt(1) + 1;
             } else {
-                consultNum = 1;
+                consultNum = 100000000;
             }
 
             patientSet.close();
