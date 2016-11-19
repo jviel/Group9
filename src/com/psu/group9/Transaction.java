@@ -1,4 +1,4 @@
-package src;
+package com.psu.group9;
 
 import java.util.Date;
 import java.text.ParseException;
