@@ -332,8 +332,43 @@ public class Database {
         return true;
     }
 
-    /*---Sets patient FinancialStanding=1, marking as active---*/
+    private Boolean reinstateObject(String table, int ID) {
+    	Statement stmt = null;
+    	
+    	try {
+    		if(!entryExists(table, ID)) {
+    			return false;
+    		}
+    		
+    		// Should eval to "UPDATE table SET STATUS = 1 WHERE tableID = ID.
+    		stmt = conn.createStatement();
+    		stmt.executeUpdate("UPDATE " + table + " SET STATUS = 1 " +
+    		    "WHERE " + table.substring(0, table.length() - 1) + "ID = " + Integer.toString(ID));
+    		stmt.close();
+    	}
+    	catch (SQLException e) {
+            System.err.println("Error occurred in the database while reinstating a " 
+            		+ table.substring(0, table.length() - 1) + ".");
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
+    }
+    
     public Boolean reinstatePatient(int ID) {
+    	return reinstateObject("Patients", ID);
+    }
+    
+    public Boolean reinstateProvider(int ID) {
+    	return reinstateObject("Providers", ID);
+    }
+    
+    public Boolean reinstateService(int ID) {
+    	return reinstateObject("Services", ID);
+    }
+    
+    /*---Sets patient FinancialStanding=1, marking as active---*/
+    public Boolean reinstatePatientFinancial(int ID) {
         Statement stmt = null;
 
         try {
@@ -351,6 +386,7 @@ public class Database {
         }
         return true;
     }
+    
 
     /*---Adds a service to the database, return ID---*/
     public int addService(Service newService) {
@@ -863,8 +899,9 @@ public class Database {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT 1 FROM " + table + " WHERE " + 
+            rs = stmt.executeQuery("SELECT * FROM " + table + " WHERE " + 
                     IDColumn + " = " + Integer.toString(ID));
+
 
             // Because the function can build a vector of Patients or Providers, we
             // need to have different conditional blocks for whether we grabbed from
@@ -900,6 +937,7 @@ public class Database {
         }
         catch(SQLException | InputException e) {
             System.err.println("Error occured in the database while retrieving patients/providers.");
+            System.err.println(e.getMessage());
         }
 
         return returnVec;

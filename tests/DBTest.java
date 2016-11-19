@@ -3,6 +3,7 @@ import com.psu.group9.*;
 import static org.junit.Assert.*;
 
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -23,9 +24,6 @@ import java.util.Vector;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DBTest {
     Database db = new Database("testDB.db");
-    int patientID = 100000001;    //When tested with a clean DB. Will refer to Test name in addPatientTest
-    int serviceID = 100000;        //When tested with a clean DB. Will refer to Test service in addServiceTest
-    int dummyID = 1;
     
     @Test
     public void A0000redoDatabase() {
@@ -162,7 +160,7 @@ public class DBTest {
             
             Vector<Entity> vec = db.getPatientsByName("Gloria Lofton");
             ID = vec.get(0).getIdNumber();
-            Boolean reinstated = db.reinstatePatient(ID);
+            Boolean reinstated = db.reinstatePatientFinancial(ID);
             assertTrue("Reinstated", reinstated);
         }
     
@@ -536,6 +534,99 @@ public class DBTest {
         }
     }
     
+    // We add another Patient, make him inactive, and reinstate it again.
+    @Test
+    public void E001suspendAndReinstatePatientTest() {
+    	int ID;
+    	Vector<Entity> patientVec;
+    	try {
+    		Patient newPatient = new Patient(0, "Joe Bottini", "24 Dartmouth Dr", "Framingham", "MA", "01701", true, true);
+    		ID = db.addPatient(newPatient);
+    		
+    		assertTrue("ID > 99999999", ID > 99999999);
+    		
+    		Boolean suspended = db.removePatient(ID);
+    		assertTrue("Suspended", suspended);
+    		
+    		patientVec = db.getPatientByID(ID);
+    		assertTrue("patientVec.size() == 1", patientVec.size() == 1);
+    		assertFalse("Patient's status", patientVec.get(0).getStatus());
+    		
+    		Boolean reinstated = db.reinstatePatient(ID);
+    		assertTrue("Reinstated", reinstated);
+    		
+    		patientVec = db.getPatientByID(ID);
+    		assertTrue("patientVec.size() == 1", patientVec.size() == 1);
+    		assertTrue("Patient's status", patientVec.get(0).getStatus());
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
+    
+    // We add another Provider, make it inactive, and reinstate it again.
+    
+    @Test
+    public void E002suspendAndReinstateProviderTest() {
+    	int ID;
+    	Vector<Entity> providerVec;
+    	try {
+    		Provider newProvider = new Provider(0, "Zeta Consulting", "7891 Sade St", "Hillsbor", "OR", "97123", true);
+    		ID = db.addProvider(newProvider);
+    		
+    		assertTrue("ID > 99999999", ID > 99999999);
+    		
+    		Boolean suspended = db.removeProvider(ID);
+    		assertTrue("Suspended", suspended);
+    		
+    		providerVec = db.getProviderByID(ID);
+    		assertTrue("providerVec.size() == 1", providerVec.size() == 1);
+    		assertFalse("Provider's status", providerVec.get(0).getStatus());
+    		
+    		Boolean reinstated = db.reinstateProvider(ID);
+    		assertTrue("Reinstated", reinstated);
+    		providerVec = db.getProviderByID(ID);
+    		assertTrue("providerVec.size() == 1", providerVec.size() == 1);
+    		assertTrue("Provider's status", providerVec.get(0).getStatus());
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
+    
+    // We add another Service, make it inactive, and reinstate it again.
+    
+    @Test
+    public void E003suspendAndReinstateServiceTest() {
+    	int ID;
+    	Vector<Service> serviceVec;
+    	try {
+    		Service newService = new Service("Therapy Dog", 10.00F);
+    		ID = db.addService(newService);
+    		
+    		assertTrue("ID > 99999", ID > 99999);
+    		
+    		Boolean suspended = db.removeService(ID);
+    		assertTrue("Suspended", suspended);
+    		
+    		serviceVec = db.getServiceByID(ID);
+    		assertTrue("serviceVec.size() == 1", serviceVec.size() == 1);
+    		assertFalse("Service's status", serviceVec.get(0).getStatus());
+    		
+    		Boolean reinstated = db.reinstateService(ID);
+    		assertTrue("Reinstated", reinstated);
+    		serviceVec = db.getServiceByID(ID);
+    		assertTrue("serviceVec.size() == 1", serviceVec.size() == 1);
+    		assertTrue("Service's status", serviceVec.get(0).getStatus());
+    	}
+    	catch(InputException e) {
+    		e.printStackTrace();
+    		fail();
+    	}
+    }
+    
     /*
     // We update the first service, setting it equal to "Test Service2", 94.00F.
     @Test
@@ -631,7 +722,7 @@ public class DBTest {
         }
     */
     
-    @AfterClass
+    @BeforeClass
     public static void removeDB() {
         // Delete the database if it doesn't already exist.
         Path dbPath = Paths.get("testDB.db");
@@ -669,17 +760,6 @@ public class DBTest {
                                 true            // Financial Standing
                                 );
                         currentPatientID = db.addPatient(currentPatient);
-
-                        if(currentPatientID != -1) {
-                            System.out.println("Added " + currentPatient.getName() +
-                            " to database. ID = " + currentPatientID);
-                        }
-    
-                        else {
-                            System.out.println("Tried to add " +
-                                    currentPatient.getName() + 
-                                    ", but patient already exists.");
-                        }
                     }
                     
                     catch(InputException e) {
