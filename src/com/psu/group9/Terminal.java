@@ -35,6 +35,7 @@ public class Terminal {
         /*
         create database - check validity
          */
+        Database db = new Database("database.db");
 
         // run terminal VM
         final String terminalMenu =   "@MainMenu \n" + "" +
