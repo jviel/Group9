@@ -32,6 +32,8 @@ public class Terminal {
 
     public static void main(String [] args){
 
+        Database db= new Database("database.db");
+
         /*
         create database - check validity
          */
@@ -50,7 +52,7 @@ public class Terminal {
 
             switch(userOption) {
                 case 1: System.out.println("Entering Manager Terminal...." + '\n');
-                        managerTerminal();
+                        managerTerminal(db);
                         break;
                 case 2: System.out.println("Operator Terminal:" + '\n');
                         break;
@@ -70,17 +72,14 @@ public class Terminal {
 
     /**
      * Virtualizes manager terminal
-     * @param dbWrapper
+     * @param Database
      */
-    private static void managerTerminal(){
-        /* Alternate menu
-        final String terminalMenu = "Manager Terminal Menu: \n(1) List Services, (2) Add Services, (3) Update Services, (4) Delete Services \n" +
-                                    "(5) Print EFT Report, (6) Print Summary Report, (7) Print Patient Report, (8) Print Provider Report";
-        */
+    private static void managerTerminal(Database db){
+
         final String managerMenu =  "@Manager Terminal \n" +
-                                    "For Services: (1) List, (2) Add,     (3) Update,  (4) Delete \n" +
-                                    "For Reports:  (5) EFT,  (6) Summary, (7) Patient, (8) Provider \n" +
-                                    "Other:        (9) Exit Manger Terminal \n";
+                                    "For Services: (1) List (2) Add     (3) Update  (4) Delete   (5) Reinstate  \n" +
+                                    "For Reports:  (6) EFT  (7) Summary (8) Patient (9) Provider \n" +
+                                    "Other:        (10) Exit Manger Terminal \n";
         final String prompt = "Enter option: ";
         int mmMax = 9;
         int mmMin = 1;
@@ -94,28 +93,55 @@ public class Terminal {
 
             switch(option){
                 case 1: //List services
+                        /* -- TODO: Update print vector when Mike changes print function */
+                        db.printAllServices();
                         break;
                 case 2: //Add service
                         System.out.println("Adding service...");
                         Service service = getService();
-                        /* CALL DB TO ADD SERVICE
-                        *  GET ID IN RETURN
-                        *  PRINT TO USER*/
+                        int id = db.addService(service);
+                        if (id > 0){
+                            System.out.println("Added: \n" + service.toString());
+                        } else if (id < -1) {
+                            System.out.println("Service " + service.getName() + " already exists.");
+                        }
                         break;
                 case 3: //Update service
-                       // System.out.println("Please enter the new ");
+                        /* --- TODO: Add confirmation for service object update */
+                        int updateServiceId = getInt("Please enter the service code: ", 0, 999999);
+                        System.out.println("Please enter the new...");
+                        Service updateService = getService();
+                        if(db.updateService(updateServiceId, updateService)){
+                            System.out.println("Updated service code " + updateServiceId);  // -- NOTE: Needs prettier print
+                        } else {
+                            System.out.println("service code " + updateServiceId + " did not exist.");
+                        }
                         break;
                 case 4: //Delete service
+                        /* --- TODO: Add confirmation for service object to delete */
+                        int deleteServiceID = getInt("Please enter the code for the service you'd like to delete: ", 0, 999999);
+                        if(db.removeService(deleteServiceID)){
+                            System.out.println("Service deleted.");
+                        } else {
+                            System.out.println("Failed to delete service.");
+                        }
                         break;
-                case 5: //EfT
+                case 5: //Reinstate deleted service
+                        int reinstateServiceId = getInt("Please enter the code for the service you'd like to reinstate: ", 0, 999999);
+                        if(db.reinstateService(reinstateServiceId)){
+                            System.out.println("Reinstate ID " + reinstateServiceId);
+                        }
                         break;
-                case 6: //Summary
+
+                case 6: //Print EFT Report
                         break;
-                case 7: //Patient report
+                case 7: //Print Summary Report
                         break;
-                case 8: //Provider report
+                case 8: //Print Patient Report
                         break;
-                case 9: //quit...
+                case 9: //Print Provider report
+                        break;
+                case 10: //quit...
                         break;
                 default: System.out.println("Option " + option + " not valid");
                         break;
