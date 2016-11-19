@@ -626,7 +626,40 @@ public class DBTest {
     		fail();
     	}
     }
-    
+    // We add a couple more services, remove them, and make sure that we can retrieve them
+    // with getInactiveServices().
+    @Test
+    public void F001getInactiveServicesTest() {
+        Vector<Service> serviceVec;
+
+        try {
+
+            Service serv1 = new Service("Test1", 150.00F);
+            Service serv2 = new Service("Test2", 200.00F);
+
+            int ID = db.addService(serv1);
+            assertTrue("Successfully added serv1", ID > 99999);
+            Boolean removed = db.removeService(ID);
+            assertTrue("Successfully removed serv1", removed);
+
+            ID = db.addService(serv2);
+            assertTrue("Successfully added serv2", ID > 99999);
+            removed = db.removeService(ID);
+            assertTrue("Successfully removed serv2", removed);
+
+            serviceVec = db.getInactiveServices();
+        
+            assertTrue("Vector contains serv1", serviceVec.contains(serv1));
+            assertTrue("Vector contains serv2", serviceVec.contains(serv2));
+        }
+        catch (InputException e) {
+            System.err.println(e.getMessage());
+            fail();
+        }
+    }
+
+       
+      
     /*
     // We update the first service, setting it equal to "Test Service2", 94.00F.
     @Test

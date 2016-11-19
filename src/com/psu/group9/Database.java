@@ -1389,7 +1389,29 @@ public class Database {
     public Vector<Transaction> getWeekTransactionsByProvider(int ID, String date) {
         return getWeekTransactions("ProviderID", ID, date);
     }
+    public Vector<Service> getInactiveServices() {
+        Vector<Service> returnVec = new Vector<Service>();
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 0");
 
+            while(rs.next()) {
+                returnVec.add(new Service(
+                                  rs.getInt("ServiceID"),
+                                  rs.getString("Name"),
+                                  rs.getFloat("Fee"),
+                                  rs.getInt("Status")
+                                  )
+                             );
+            }
+        }
+        catch (SQLException | InputException e) {
+            System.out.println("Problem encountered when getting inactive services.");
+            System.out.println(e.getMessage());
+        }
+        
+        return returnVec;
+    }
     /*---Converts MM-DD-YYYY to YYYY-MM-DD--*/
     private String toSQLDate(String outputDate) {
         SimpleDateFormat inputFormat = new SimpleDateFormat("MM-dd-yyyy");
