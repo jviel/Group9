@@ -1,4 +1,4 @@
-package src;
+package com.psu.group9;
 import java.util.Scanner;
 import java.util.jar.Pack200;
 import java.util.InputMismatchException;

@@ -102,10 +102,11 @@ public class Service {
         } else {
             final Service other = (Service) obj;
             if (!(compareStrings(name, other.getName())) ||
+                (Math.abs(fee - other.getFee()) > 0.000000001)) {     // ugliness to compare floats
                 // mismatch or service not in db
-                fee != other.getFee()) {
                 ret = false;
             } else {
+                // match
                 ret = true;
             }
         }
