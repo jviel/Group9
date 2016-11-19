@@ -1,5 +1,7 @@
 package com.psu.group9;
 
+import java.text.NumberFormat;
+
 public class Service {
     String name;
     int code;
@@ -84,9 +86,12 @@ public class Service {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        return sb.append(code).append("\t")
-                 .append(name).append("\t$")
-                 .append(fee).toString();
+        NumberFormat fmt = NumberFormat.getCurrencyInstance();
+        return sb.append("Code: ").append(code).append("  ")
+                 .append("Name: ").append(name).append("  ")
+                 .append("Fee: ").append(fmt.format(fee)).append("  ")
+                 .append("Status: ").append((status) ? "Active" : "Inactive")
+                 .toString();
     }
 
     // Overrides to help Database Wrapper ----
