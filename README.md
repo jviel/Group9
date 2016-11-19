@@ -10,6 +10,9 @@ If you're running from the command line, you need to include the jar in your `cl
 
 Someone who is using IntelliJ or another pleb ID should be able to do something similar. Please post a screenshot of your chosen snowflake IDE doing the needful.
 
+**To set up SQLite database once you have JDBC jar above: for Intellij, go to `Project Structure -> Libraries -> hit '+' -> point it to jdbc jar'` then recompile  
+   
+
 ## .gitattributes file deals with line endings  
 create a file in your local repo called .gitattributes with the following:
 ```

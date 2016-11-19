@@ -1,4 +1,5 @@
 .gitattributes
+*.db
 *.idea
 .idea/*
 *.iml
