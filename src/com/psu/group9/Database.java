@@ -31,6 +31,10 @@ public class Database {
         }
 
         checkDatabase();
+        getAllPatients();
+        getAllProviders();
+        getAllTransactions();
+        getAllServices();
     }
 
     /*----Checks the database and creates tables during the first run---*/
@@ -333,40 +337,40 @@ public class Database {
     }
 
     private Boolean reinstateObject(String table, int ID) {
-    	Statement stmt = null;
-    	
-    	try {
-    		if(!entryExists(table, ID)) {
-    			return false;
-    		}
-    		
-    		// Should eval to "UPDATE table SET STATUS = 1 WHERE tableID = ID.
-    		stmt = conn.createStatement();
-    		stmt.executeUpdate("UPDATE " + table + " SET STATUS = 1 " +
-    		    "WHERE " + table.substring(0, table.length() - 1) + "ID = " + Integer.toString(ID));
-    		stmt.close();
-    	}
-    	catch (SQLException e) {
+        Statement stmt = null;
+
+        try {
+            if(!entryExists(table, ID)) {
+                return false;
+            }
+
+            // Should eval to "UPDATE table SET STATUS = 1 WHERE tableID = ID.
+            stmt = conn.createStatement();
+            stmt.executeUpdate("UPDATE " + table + " SET STATUS = 1 " +
+                    "WHERE " + table.substring(0, table.length() - 1) + "ID = " + Integer.toString(ID));
+            stmt.close();
+        }
+        catch (SQLException e) {
             System.err.println("Error occurred in the database while reinstating a " 
-            		+ table.substring(0, table.length() - 1) + ".");
+                    + table.substring(0, table.length() - 1) + ".");
             System.err.println(e.getMessage());
             return false;
         }
         return true;
     }
-    
+
     public Boolean reinstatePatient(int ID) {
-    	return reinstateObject("Patients", ID);
+        return reinstateObject("Patients", ID);
     }
-    
+
     public Boolean reinstateProvider(int ID) {
-    	return reinstateObject("Providers", ID);
+        return reinstateObject("Providers", ID);
     }
-    
+
     public Boolean reinstateService(int ID) {
-    	return reinstateObject("Services", ID);
+        return reinstateObject("Services", ID);
     }
-    
+
     /*---Sets patient FinancialStanding=1, marking as active---*/
     public Boolean reinstatePatientFinancial(int ID) {
         Statement stmt = null;
@@ -386,7 +390,6 @@ public class Database {
         }
         return true;
     }
-    
 
     /*---Adds a service to the database, return ID---*/
     public int addService(Service newService) {
@@ -593,111 +596,6 @@ public class Database {
         return true;
     }  
 
-    
-    /*---Checks if an entry exists and is active---*/
-    private Boolean entryExistsAndIsActive(String tableName, int ID) throws SQLException {
-        Statement stmt = null;
-        ResultSet rs = null;
-        String column = tableName.substring(0, tableName.length() - 1);
-        column += "ID";
-
-        stmt = conn.createStatement();
-        rs = stmt.executeQuery("SELECT 1 FROM " + tableName + " WHERE " +
-                column + " = " + Integer.toString(ID) + " AND Status = 1");
-
-        if(rs.next()) {
-            stmt.close();
-            return true;
-        }
-        
-        stmt.close();
-        return false;
-    }
-
-    /*---Prints all patients---*/
-    public void printAllPatients() {
-        Statement stmt = null;
-        ResultSet rs = null;
-        Patient currentPatient;
-
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Patients");
-
-            while(rs.next()) {
-                currentPatient = new Patient(rs.getInt("PatientID"),
-                        rs.getString("Name"),
-                        rs.getString("Address"),
-                        rs.getString("City"),
-                        rs.getString("State"),
-                        rs.getString("Zipcode"),
-                        rs.getInt("Status"),
-                        rs.getInt("FinancialStanding"));
-                System.out.println(currentPatient + "\n");
-            }
-
-            rs.close();
-            stmt.close();
-        }
-        catch (Exception e) {
-            System.err.println("Error occured in the database while printing patients.");
-        }
-    }
-
-    /*---Prints all providers---*/
-    public void printAllProviders() {
-        Statement stmt = null;
-        ResultSet rs = null;
-        Provider currentProvider;
-
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery ("SELECT * FROM Providers");
-
-            while(rs.next()) {
-                currentProvider = new Provider(rs.getInt("ProviderID"),
-                        rs.getString("Name"),
-                        rs.getString("Address"),
-                        rs.getString("City"),
-                        rs.getString("State"),
-                        rs.getString("Zipcode"),
-                        rs.getBoolean("Status"));
-                System.out.println(currentProvider + "\n");
-            }
-            rs.close();
-            stmt.close();
-        }
-        catch (Exception e) {
-            System.err.println("Error occured in the database while printing providers.");
-        }
-    }
-
-    /*---Prints all services---*/
-    public void printAllServices() {
-        Statement stmt = null;
-        ResultSet rs = null;
-        Service currentService;
-
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery ("SELECT * FROM Services");
-
-            while(rs.next()) {
-                currentService = new Service(rs.getInt("ServiceID"),
-                        rs.getString("Name"),
-                        rs.getFloat("Fee"),
-                        rs.getInt("Status"));
-                System.out.println(currentService + "\n");
-            }
-
-            rs.close();
-            stmt.close();
-        }
-        catch (Exception e) {
-            System.err.println("Error occured in the database while printing services.");
-        }
-    }
-
     /*--Adds new transaction, returns ID---*/
     public int addTransaction(Transaction newTransaction) {
         PreparedStatement stmt = null;
@@ -743,12 +641,148 @@ public class Database {
         return transactionNum - 1;
     }
 
+    /*---Checks if an entry exists and is active---*/
+    private Boolean entryExistsAndIsActive(String tableName, int ID) throws SQLException {
+        Statement stmt = null;
+        ResultSet rs = null;
+        String column = tableName.substring(0, tableName.length() - 1);
+        column += "ID";
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery("SELECT 1 FROM " + tableName + " WHERE " +
+                column + " = " + Integer.toString(ID) + " AND Status = 1");
+
+        if(rs.next()) {
+            stmt.close();
+            return true;
+        }
+
+        stmt.close();
+        return false;
+    }
+
+
+    /*---Prints all patients---*/
+    /*public void printAllPatients() {
+      Statement stmt = null;
+      ResultSet rs = null;
+      Patient currentPatient;
+
+      try {
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery("SELECT * FROM Patients");
+
+      while(rs.next()) {
+      currentPatient = new Patient(rs.getInt("PatientID"),
+      rs.getString("Name"),
+      rs.getString("Address"),
+      rs.getString("City"),
+      rs.getString("State"),
+      rs.getString("Zipcode"),
+      rs.getInt("Status"),
+      rs.getInt("FinancialStanding"));
+      System.out.println(currentPatient + "\n");
+      }
+
+      rs.close();
+      stmt.close();
+      }
+      catch (Exception e) {
+      System.err.println("Error occured in the database while printing patients.");
+      }
+      }
+
+    /*---Prints all providers---*/
+    /*public void printAllProviders() {
+      Statement stmt = null;
+      ResultSet rs = null;
+      Provider currentProvider;
+
+      try {
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery ("SELECT * FROM Providers");
+
+      while(rs.next()) {
+      currentProvider = new Provider(rs.getInt("ProviderID"),
+      rs.getString("Name"),
+      rs.getString("Address"),
+      rs.getString("City"),
+      rs.getString("State"),
+      rs.getString("Zipcode"),
+      rs.getBoolean("Status"));
+      System.out.println(currentProvider + "\n");
+      }
+      rs.close();
+      stmt.close();
+      }
+      catch (Exception e) {
+      System.err.println("Error occured in the database while printing providers.");
+      }
+      }
+
+    /*---Prints all services---*/
+    /*public void printAllServices() {
+      Statement stmt = null;
+      ResultSet rs = null;
+      Service currentService;
+
+      try {
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery ("SELECT * FROM Services");
+
+      while(rs.next()) {
+      currentService = new Service(rs.getInt("ServiceID"),
+      rs.getString("Name"),
+      rs.getFloat("Fee"),
+      rs.getInt("Status"));
+      System.out.println(currentService + "\n");
+      }
+
+      rs.close();
+      stmt.close();
+      }
+      catch (Exception e) {
+      System.err.println("Error occured in the database while printing services.");
+      }
+      }
+
+    /*---Prints all transactions---*/
+    /*public void printAllTransactions() {
+      Statement stmt = null;
+      ResultSet rs = null;
+      Transaction currentTransaction;
+
+      try {
+      stmt = conn.createStatement();
+      rs = stmt.executeQuery ("SELECT * FROM Transactions");
+
+      while(rs.next()) {
+      currentTransaction = new Transaction(
+      rs.getInt("TransactionID"),
+      rs.getInt("PatientID"),
+      rs.getInt("ProviderID"),
+      rs.getInt("ServiceID"),
+      rs.getInt("ConsultID"),
+      rs.getString("DateTime"),
+      toOutputDate(rs.getString("ServiceDate")),
+      rs.getString("Comment"));
+      System.out.println(currentTransaction + "\n");
+      }
+      rs.close();
+      stmt.close();
+      }
+      catch (Exception e) {
+      System.err.println("Error occured in the database while printing transactions.");
+      }
+      }
+
+
     ///Unused
     /*public void addTransactions(String filename) {
-      String line;
-      Transaction currentTransaction;
-      int currentTransactionID;
-      int lineNumber = 1;
+    String line;
+    Transaction currentTransaction;
+    int currentTransactionID;
+    int lineNumber = 1;
 
     // Fatal exception try.
     try {
@@ -859,36 +893,6 @@ public class Database {
     }
     */
 
-    /*---Prints all transactions---*/
-    public void printAllTransactions() {
-        Statement stmt = null;
-        ResultSet rs = null;
-        Transaction currentTransaction;
-
-        try {
-            stmt = conn.createStatement();
-            rs = stmt.executeQuery ("SELECT * FROM Transactions");
-
-            while(rs.next()) {
-                currentTransaction = new Transaction(
-                        rs.getInt("TransactionID"),
-                        rs.getInt("PatientID"),
-                        rs.getInt("ProviderID"),
-                        rs.getInt("ServiceID"),
-                        rs.getInt("ConsultID"),
-                        rs.getString("DateTime"),
-                        toOutputDate(rs.getString("ServiceDate")),
-                        rs.getString("Comment"));
-                System.out.println(currentTransaction + "\n");
-            }
-            rs.close();
-            stmt.close();
-        }
-        catch (Exception e) {
-            System.err.println("Error occured in the database while printing transactions.");
-        }
-    }
-
     /*---Returns a vector of patient or provider objects by ID---*/
     private Vector<Entity> getEntityByID(String table, int ID) {
         Statement stmt = null;
@@ -996,8 +1000,51 @@ public class Database {
         return returnVec;
     }
 
+    private Vector<Entity> getAllEntities(String table){
+        Statement stmt = null;
+        ResultSet rs = null;
+        Vector<Entity> returnVec = new Vector<Entity>();
+
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM " + table);
+
+            while(rs.next()){
+                if(table == "Patients"){
+                    returnVec.add(new Patient(
+                                rs.getInt("PatientID"),
+                                rs.getString("Name"),
+                                rs.getString("Address"),
+                                rs.getString("City"),
+                                rs.getString("State"),
+                                rs.getString("Zipcode"),
+                                rs.getInt("Status"),
+                                rs.getInt("FinancialStanding")
+                                ));
+                } else if(table == "Providers"){
+                    returnVec.add( new Provider(
+                                rs.getInt("ProviderID"),
+                                rs.getString("Name"),
+                                rs.getString("Address"),
+                                rs.getString("City"),
+                                rs.getString("State"),
+                                rs.getString("Zipcode"),
+                                rs.getBoolean("Status")
+                                ));
+                }
+            }
+            stmt.close();
+            rs.close();
+        } 
+        catch (SQLException | InputException e) {
+            System.err.println("Error occured in the database while retrieving patients/providers.");
+        }
+
+        return returnVec;
+    }
     // All of the database getter functions, which execute the private getter
     // functions listed above with various tables, columns, and criteria.
+
 
     public Vector<Entity> getPatientByID(int ID) {
         return getEntityByID("Patients", ID);
@@ -1024,6 +1071,10 @@ public class Database {
         return getEntityByString("Patients", "Zipcode", zipcode);
     }
 
+    public Vector<Entity> getAllPatients(){
+        return getAllEntities("Patients");
+    }
+
     public Vector<Entity> getProviderByID(int ID)  {
         return getEntityByID("Providers", ID);
     }
@@ -1048,6 +1099,10 @@ public class Database {
     public Vector<Entity> getProvidersByZipcode(String zipcode)
     {
         return getEntityByString("Providers", "Zipcode", zipcode);
+    }
+
+    public Vector<Entity> getAllProviders(){
+        return getAllEntities("Providers");
     }
 
     // Since Services and Transactions are not Entity objects, we have to
@@ -1141,6 +1196,35 @@ public class Database {
         return returnVec;
     }
 
+    /*---Return a vector of all services---*/
+    public Vector<Service> getAllServices()  {
+        Statement stmt = null;
+        ResultSet rs = null;
+        Vector<Service> returnVec = new Vector<Service>();
+
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM Services");
+
+            while(rs.next()) {
+                returnVec.add( new Service(
+                            rs.getInt("ServiceID"),
+                            rs.getString("Name"),
+                            rs.getFloat("Fee"),
+                            rs.getInt("Status")
+                            )
+                        );    
+            }
+            stmt.close();
+            rs.close();
+        }
+        catch(SQLException | InputException e) {
+            System.err.println("Error occured in the database while retrieving services.");
+        }
+
+        return returnVec;
+    }
+
     // Since so many Transaction columns are ints, we can create a private
     // function that specifies the column that it will search by.
 
@@ -1189,6 +1273,38 @@ public class Database {
             stmt = conn.prepareStatement("SELECT * FROM " + "Transactions" + " WHERE " + column + " = ?");
             stmt.setString(1, criteria);
             rs = stmt.executeQuery();
+
+            while(rs.next()) {
+                returnVec.add( new Transaction(
+                            rs.getInt("TransactionID"),
+                            rs.getInt("PatientID"),
+                            rs.getInt("ProviderID"),
+                            rs.getInt("ServiceID"),
+                            rs.getInt("ConsultID"),
+                            rs.getString("DateTime"),
+                            toOutputDate(rs.getString("ServiceDate")),
+                            rs.getString("Comment")
+                            )
+                        );
+            }
+            stmt.close();
+            rs.close();
+        }
+        catch(SQLException | InputException e) {
+            System.err.println("Error occured in the database while retrieving transactions.");
+        }
+
+        return returnVec;
+    }
+
+    public Vector<Transaction> getAllTransactions(){
+        Statement stmt = null;
+        ResultSet rs = null;
+        Vector<Transaction> returnVec = new Vector<Transaction>();
+
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery("SELECT * FROM Transactions");
 
             while(rs.next()) {
                 returnVec.add( new Transaction(
@@ -1397,19 +1513,19 @@ public class Database {
 
             while(rs.next()) {
                 returnVec.add(new Service(
-                                  rs.getInt("ServiceID"),
-                                  rs.getString("Name"),
-                                  rs.getFloat("Fee"),
-                                  rs.getInt("Status")
-                                  )
-                             );
+                            rs.getInt("ServiceID"),
+                            rs.getString("Name"),
+                            rs.getFloat("Fee"),
+                            rs.getInt("Status")
+                            )
+                        );
             }
         }
         catch (SQLException | InputException e) {
             System.out.println("Problem encountered when getting inactive services.");
             System.out.println(e.getMessage());
         }
-        
+
         return returnVec;
     }
     /*---Converts MM-DD-YYYY to YYYY-MM-DD--*/
