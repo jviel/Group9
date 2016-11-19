@@ -1,5 +1,15 @@
 # **do not push directly to origin/master!**  
 
+# Adding JDBC
+
+Go to [here](https://bitbucket.org/xerial/sqlite-jdbc/downloads) and select a jar. The requirements document specifies Version 3.14.2.1, but later versions also work.
+
+## Running with JDBC
+
+If you're running from the command line, you need to include the jar in your `classpath`. If you don't feel like changing your `.bashrc` to export the path to the `classpath`, the SQLite Tester repo has a [Linux / Mac script](https://github.com/mbottini/SQLite-Tester/blob/master/run.sh) and a [Powershell script](https://github.com/mbottini/SQLite-Tester/blob/master/run.ps1). Note that both of these scripts run the 3.14.2.1 version; if you download a later version, you need to change that. You'll also need to change the `mainApp` to whatever program you are running. If you're running in something like Eclipse, you can add this to your classpath in the [Run Configuration](http://i.imgur.com/1NdjFnm.png), as shown by this screenshot. Click on Group9 and then select "Add External JAR" about midway down the right.
+
+Someone who is using IntelliJ or another pleb ID should be able to do something similar. Please post a screenshot of your chosen snowflake IDE doing the needful.
+
 ## .gitattributes file deals with line endings  
 create a file in your local repo called .gitattributes with the following:
 ```
