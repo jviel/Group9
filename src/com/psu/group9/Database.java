@@ -8,11 +8,12 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
 public class Database {
-    int patientNum;
-    int serviceNum;
-    int    transactionNum;
-    int    providerNum;
-    Connection     conn = null;
+    private int     patientNum;
+    private int     serviceNum;
+    private int     transactionNum;
+    private int     providerNum;
+    private int     consultNum;
+    private Connection conn = null;
 
     //Constructor
     public Database(String dbName) {
@@ -31,21 +32,19 @@ public class Database {
         }
 
         checkDatabase();
-        getAllPatients();
-        getAllProviders();
-        getAllTransactions();
-        getAllServices();
     }
 
     /*----Checks the database and creates tables during the first run---*/
     private void checkDatabase(){
         try {
             /*---Retrieve tables---*/
+            Statement stmt = conn.createStatement();
             DatabaseMetaData meta = conn.getMetaData();
             ResultSet patientSet = meta.getTables(null, null, "Patients", null);
             ResultSet serviceSet = meta.getTables(null, null, "Services", null);
             ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
             ResultSet providerSet = meta.getTables(null, null, "Providers", null);
+            ResultSet consultRs = stmt.executeQuery("SELECT MAX(ConsultID) FROM Transactions");
 
             /*---Queries used to create tables---*/
             String patientQuery = 
@@ -124,10 +123,16 @@ public class Database {
             checkColumns("Services", serviceColumns);      
 
             /*---Get last used ID's. Set them to correct size---*/
-            patientNum    = 100000000 + getRowsCount("Patients");
-            providerNum    = 100000000 + getRowsCount("Providers");
-            transactionNum = 100000000 + getRowsCount("Transactions");
-            serviceNum     = 100000 + getRowsCount("Services");
+            patientNum      = 100000000 + getRowsCount("Patients");
+            providerNum     = 100000000 + getRowsCount("Providers");
+            transactionNum  = 100000000 + getRowsCount("Transactions");
+            serviceNum      = 100000 + getRowsCount("Services");
+
+            if(consultRs.next()){
+                consultNum = consultRs.getInt(1) + 1;
+            } else {
+                consultNum = 1;
+            }
 
             patientSet.close();
             serviceSet.close();
@@ -597,48 +602,47 @@ public class Database {
     }  
 
     /*--Adds new transaction, returns ID---*/
-    public int addTransaction(Transaction newTransaction) {
+    private int addTransaction(Transaction newTransaction, int consultID) throws SQLException {
         PreparedStatement stmt = null;
 
+        stmt = conn.prepareStatement ("INSERT INTO Transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        stmt.setInt(1, transactionNum);
+        stmt.setString(2, newTransaction.getDateTime());
+        stmt.setString(3, toSQLDate(newTransaction.getServiceDate()));
+        stmt.setString(4, newTransaction.getComments());
+        stmt.setInt(5, newTransaction.getPatientID());
+        stmt.setInt(6, newTransaction.getProviderID());
+        stmt.setInt(7, newTransaction.getServiceID());
+        stmt.setInt(8, consultID);
+        stmt.executeUpdate();
+        stmt.close();
+        transactionNum++;
+
+        return transactionNum - 1;
+    }
+
+    public Boolean addConsultation(Vector<Transaction> consultation){
         try {
             // We need to ensure that the Provider, Patient, and Service IDs
             // exist.
-
-            if(!entryExistsAndIsActive("Patients", newTransaction.getPatientID())) {
-                return -3;
+            for(Transaction tr : consultation){
+                if(!entryExistsAndIsActive("Patients", tr.getPatientID()) 
+                        || !entryExistsAndIsActive("Providers", tr.getProviderID()) 
+                        || !entryExistsAndIsActive("Services", tr.getServiceID())) {
+                    return false;
+                }               
             }
-
-            if(!entryExistsAndIsActive("Providers", newTransaction.getProviderID())) {
-                return -4;
+            for(Transaction tr : consultation){
+                addTransaction(tr, consultNum);
             }
-
-            if(!entryExistsAndIsActive("Services", newTransaction.getServiceID())) {
-                return -5;
-            }
-
-            // Otherwise, we're good!
-
-            stmt = conn.prepareStatement ("INSERT INTO Transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-
-            stmt.setInt(1, transactionNum);
-            stmt.setString(2, newTransaction.getDateTime());
-            stmt.setString(3, toSQLDate(newTransaction.getServiceDate()));
-            stmt.setString(4, newTransaction.getComments());
-            stmt.setInt(5, newTransaction.getProviderID());
-            stmt.setInt(6, newTransaction.getPatientID());
-            stmt.setInt(7, newTransaction.getServiceID());
-            stmt.setInt(8, newTransaction.getConsultationNumber());
-            stmt.executeUpdate();
-            stmt.close();
-            transactionNum++;
-
-
-        } catch(SQLException e) {
-            System.err.println("Error occured in the database while adding the transaction data.");
-            return -1;
         }
+        catch (SQLException e){
+            System.err.println("Error occured in the database while adding consultation.");
+            return false;
+        }
+        consultNum++;
 
-        return transactionNum - 1;
+        return true;
     }
 
     /*---Checks if an entry exists and is active---*/
