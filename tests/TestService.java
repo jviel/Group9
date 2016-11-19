@@ -153,10 +153,22 @@ public class TestService {
     // ---- Test overrides and helpers ----
     // tests toString override
     @Test
-    public void testToString() {
+    public void testToStringActive() {
         try {
-            Service service = new Service("Massage", 60.85f);
-            String expectedResult = "0\tMassage\t$60.85";
+            Service service = new Service(1, "Massage", 60.85f, 1);
+            String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Active";
+            String actualResult = service.toString();
+            assertEquals(expectedResult, actualResult);
+        } catch (InputException e) {
+            fail(e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testToStringInactive() {
+        try {
+            Service service = new Service(1, "Massage", 60.85f, 0);
+            String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Inactive";
             String actualResult = service.toString();
             assertEquals(expectedResult, actualResult);
         } catch (InputException e) {
