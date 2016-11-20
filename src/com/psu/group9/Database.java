@@ -622,7 +622,7 @@ public class Database {
         return transactionNum - 1;
     }
 
-    public Boolean addConsultation(Vector<Transaction> consultation){
+    public int addConsultation(Vector<Transaction> consultation){
         try {
             // We need to ensure that the Provider, Patient, and Service IDs
             // exist.
@@ -630,7 +630,7 @@ public class Database {
                 if(!entryExistsAndIsActive("Patients", tr.getPatientID()) 
                         || !entryExistsAndIsActive("Providers", tr.getProviderID()) 
                         || !entryExistsAndIsActive("Services", tr.getServiceID())) {
-                    return false;
+                    return -2;
                 }               
             }
             for(Transaction tr : consultation){
@@ -639,11 +639,11 @@ public class Database {
         }
         catch (SQLException e){
             System.err.println("Error occured in the database while adding consultation.");
-            return false;
+            return -1;
         }
         consultNum++;
 
-        return true;
+        return consultNum - 1;
     }
 
     /*---Checks if an entry exists and is active---*/

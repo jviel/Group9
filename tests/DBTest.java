@@ -658,9 +658,64 @@ public class DBTest {
             fail();
         }
     }
+    
+    // We add a couple of transactions inside a consultation and add the consultation.
+    // Said consultation should be good.
+    @Test
+    public void G001addConsultationTest() {
+    	Vector<Transaction> transVec = new Vector<Transaction>();
+    	try {
+    		transVec.add(new Transaction(100000000, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
+    		transVec.add(new Transaction(100000000, 100000000, 100001, 0, "11-20-2016", "Transaction 2"));
+    		
+    		int ID = db.addConsultation(transVec);
+    		
+    		assertTrue("Consultation was successful", ID > 99999999);
+    	}
+    	catch(InputException e) {
+    		System.err.println(e.getMessage());
+    		fail();
+    	}
+    		
+    }
+    
+    // Now, we add an invalid Patient ID.
+    @Test
+    public void G002addConsultationTest2() {
+    	Vector<Transaction> transVec = new Vector<Transaction>();
+    	try {
+    		transVec.add(new Transaction(100000000, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
+    		transVec.add(new Transaction(101892310, 100000000, 100001, 0, "11-20-2016", "Transaction 2"));
+    	
+    		int ID = db.addConsultation(transVec);
+		
+    		assertTrue("Consultation failed", ID < 0);
+	    }
+    	catch(InputException e) {
+    		System.err.println(e.getMessage());
+    		fail();
+    	}
+    }
+    
+    // Next, we add a suspended Patient and try to add that one as well.
+    @Test
+    public void G003addConsultationTest3() {
+    	Vector<Transaction> transVec = new Vector<Transaction>();
+    	Vector<Entity> patientVec = new Vector<Entity>();
+    	try {
+    		Patient newPatient = new Patient(0, "Jim Jones", "1859 Geary Boulevard", "San Francisco", "CA", "94115", true, true);
+    		int ID = db.addPatient(newPatient);
+    		transVec.add(new Transaction(ID, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
+    		db.removePatient(ID);
+    		ID = db.addConsultation(transVec);
+    		assertTrue("Consultation failed", ID < 0);
+    	}
+    	catch(InputException e) {
+    		System.err.println(e.getMessage());
+    		fail();
+    	}
+    }
 
-       
-      
     /*
     // We update the first service, setting it equal to "Test Service2", 94.00F.
     @Test
