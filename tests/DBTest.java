@@ -421,13 +421,14 @@ public class DBTest {
     // Transaction Unit Tests
     
     // Adding a Transaction.
-    
+   
+    /*
     @Test
     public void D001addTransactionTest() {
         int ID;    
         try {
             Transaction newTransaction = new Transaction(100000000, 100000000, 100000, 100000000, "11-01-2016", "Stuff");
-            ID = db.addTransaction(newTransaction);
+            ID = db.addTransaction(newTransaction, 1);
             assertTrue(ID > 99999999);
 
         } catch (InputException e) {
@@ -533,7 +534,7 @@ public class DBTest {
             fail();
         }
     }
-    
+    */
     // We add another Patient, make him inactive, and reinstate it again.
     @Test
     public void E001suspendAndReinstatePatientTest() {
@@ -924,6 +925,7 @@ public class DBTest {
     }
   
     public void addTransactions(String filename) {
+        int consultID = 100000000;
         String line;
         Transaction currentTransaction;
         int currentTransactionID;
@@ -946,7 +948,10 @@ public class DBTest {
                             splitLine[0],                      // Service Date
                             splitLine[5]                       // Comment
                             );
-                    currentTransactionID = db.addTransaction(currentTransaction);
+                    Vector<Transaction> consultation = new Vector<Transaction>();
+                    consultation.add(currentTransaction);
+                    db.addConsultation(consultation);
+                    //currentTransactionID = db.addTransaction(currentTransaction, consultID);
                 }
                 catch(InputException e) {
                     System.out.println("Error for " + 
