@@ -424,7 +424,13 @@ public class Terminal {
         int mmMin = 1;
         int option = 0;
 
-        // TODO: add provider id verification. Need id for adding transactions
+        // LOGIN: Get Provider ID info
+        int id = getInt("Please enter your provider ID number: ", 0, 999999999);
+        Vector<Entity> provider = new Vector<Entity>(db.getProviderByID(id));
+        if (provider.size() == 0){
+            System.out.println("Invalid provider number");
+            return;
+        }
 
         /* --- TEST DATA --- */
 //        try {
@@ -444,7 +450,7 @@ public class Terminal {
 
             switch(option){
                 case 1: // Start consultation, needs submenu
-                    addConsultation(db);
+                    addConsultation(db, provider);
                     break;
                 case 2: // List services
                     for (Service svc : db.getAllActiveServices())
@@ -463,7 +469,7 @@ public class Terminal {
         }
     }
 
-    private static void addConsultation(Database db) {
+    private static void addConsultation(Database db, Vector<Entity> provider) {
         final String consulationMenu =
                 "@Consultation menu\n" +
                 "(1) List available services\n" +
@@ -515,9 +521,9 @@ public class Terminal {
                     try {
                         consultation.add(new Transaction(
                                 patient.firstElement().getIdNumber(), // patient id
-                                123456789,                            // provider id
+                                provider.elementAt(0).getIdNumber(),  // provider id
                                 id,                                   // service id
-                                123456,                               // consultation number
+                                0,                                    // arbitrary consultation id (set by db.addTransaction())
                                 consultDate,                          // service date
                                 comment                               // comments
                         ));
@@ -532,11 +538,13 @@ public class Terminal {
                         break;
                     }
                     int count = 1;
-                    System.out.println("\nConsultation " + consultDate + " for patient: " + patient.firstElement().getName() +
+                    System.out.println("\n\tConsultation " + consultDate + " for patient: " + patient.firstElement().getName() +
                             " (id: " + patient.firstElement().getIdNumber() + ")");
                     for (Transaction t : consultation) {
-                        System.out.println("Service " + count++);
-                        System.out.println(t);
+                        System.out.println("\t---------------------------");
+                        System.out.println("\tItem " + count++);
+                        System.out.println("\tService ID: " + t.getServiceID());
+                        System.out.println("\tComments: " + t.getComments());
                     }
                     break;
 
