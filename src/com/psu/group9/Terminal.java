@@ -1,7 +1,8 @@
 package com.psu.group9;
-import java.util.Scanner;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.jar.Pack200;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -58,6 +59,7 @@ public class Terminal {
                         operatorTerminal(db);
                         break;
                 case 3: System.out.println("Provider Terminal:" + '\n');
+                        providerTerminal(db);
                         break;
                 case 4: System.out.println("Thank you for using CA!");
                         break;
@@ -308,9 +310,152 @@ public class Terminal {
     /**
      * Provider Virtual Terminal Interface
      */
-    private static void providerTerminal(){
+    private static void providerTerminal(Database db){
 
+        final String providerMenu =  "@Provider Terminal \n" +
+                "(1) Start new consultation\n" +
+                "(2) List available services\n" +
+                "(3) List patients in consultation history\n" +
+                "(4) Logout of provider terminal\n";
+        final String prompt = "Enter option: ";
+        int mmMax = 4;
+        int mmMin = 1;
+        int option = 0;
 
+        /* --- TEST OBJECTS --- */
+        try {
+            db.addService(new Service(10001, "soothing massage", 45.00f, 1));
+            db.addPatient(new Patient(10000, "Gilmore", "123 main st.", "Portland","OR","97202",1,1));
+            db.addProvider(new Provider(10000, "Spa-tan Anonymous", "123 main st.", "Portland","OR","97202", true));
+        }
+        catch (InputException ex){
+            System.out.println("no good");
+        }
+        /* --- END TEST OBJECTS --- */
+
+        while (option != mmMax){
+
+            System.out.println("\n" + providerMenu);
+            option = getInt(prompt, mmMin, mmMax);
+
+            switch(option){
+                case 1: // Start consultation, needs submenu
+                    addConsultation(db);
+                    break;
+                case 2: // List services
+                    for (Service svc : db.getAllActiveServices())
+                        System.out.println(svc);
+                    break;
+                case 3: // List patients in history
+                    break;
+                case 4: // quit
+                    System.out.println("Logging out of provider terminal\n");
+                    break;
+                default: System.out.println("Option " + option + " not valid");
+                    break;
+            }
+        }
+    }
+
+    private static void addConsultation(Database db) {
+        final String consulationMenu =
+                "@Consultation menu\n" +
+                "(1) List available services\n" +
+                "(2) Add service to this consultation\n" +
+                "(3) View consultation so far\n" +
+                "(4) Save consultation and return to provider menu\n" +
+                "(5) Cancel\n";
+        final String prompt = "Select option: ";
+        String consultDate = "";
+        boolean validPatient = false;
+        Vector<Entity> patient = new Vector<>();
+        Vector<Transaction> consultation = new Vector<>();
+        int option = 0;
+        int mmMin = 1;
+        int mmMax = 6;
+
+        do{
+            consultDate = getString("Enter the consultation date in the form \"MM-DD-YYYY\": ", 10, 10);
+        } while (!isValidShortDate(consultDate));
+
+        do{
+            int id = getInt("Enter patient id: ", 0, 999999999);
+            patient = db.getPatientByID(id);
+            if (patient.size() > 0)
+                // TODO: confirm correct patient
+                validPatient = true;
+            else
+                System.out.println("Could not find patient with id " + id);
+        } while (!validPatient);
+
+        while (option != mmMax){
+
+            System.out.println("\n" + consultDate + ": " +
+                    patient.firstElement().getName() +
+                    "(" + patient.firstElement().getIdNumber() + ")");
+            System.out.println(consulationMenu);
+            option = getInt(prompt, mmMin, mmMax);
+
+            switch(option)
+            {
+                case 1: // List services
+                    for (Service svc : db.getAllActiveServices())
+                        System.out.println(svc);
+                    break;
+
+                case 2: // Add Service to consultation
+                    int id = getInt("Enter service ID: ", 0, 999999);
+                    String comment = getString("Add optional comment: ", 0, 100);
+                    try {
+                        consultation.add(new Transaction(
+                                patient.firstElement().getIdNumber(), // patient id
+                                12345,                                // provider id
+                                id,                                   // service id
+                                123,                                  // consultation number
+                                consultDate,                          // service date
+                                comment                               // comments
+                        ));
+                    } catch (InputException ex){
+                        System.out.println("Error adding service: " + ex.getMessage());
+                    }
+                    break;
+
+                case 3: // View consultation
+                    for (Transaction t : consultation)
+                        System.out.println(t);
+                    break;
+
+                case 4: // Save
+                    for (Transaction t : consultation)
+                        db.addTransaction(t);
+                    System.out.println("Added Consultation successfully.");
+                    option = mmMax; // break
+                    break;
+
+                case 5: // Cancel
+                    option = mmMax;
+                    break;
+
+                default:
+                    System.out.println("Invalid option.");
+                    break;
+            }
+        }
+        System.out.println("Leaving consultation menu");
+    }
+
+    /* ---- helper functions ---- */
+    private static Boolean isValidShortDate(String date) {
+        if (date.length() != 10) {
+            return false;
+        }
+        SimpleDateFormat ft = new SimpleDateFormat("MM-dd-yyyy");
+        try {
+            Date tryDate = ft.parse(date);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
     }
 
     /**
