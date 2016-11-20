@@ -129,8 +129,8 @@ public class Database {
             serviceNum      = 100000 + getRowsCount("Services");
 
             consultRs = stmt.executeQuery("SELECT MAX(ConsultID) FROM Transactions");
-            consultNum = consultRs.getInt(1);
-            if(consultNum == 0){
+            consultNum = consultRs.getInt(1) + 1;
+            if(consultNum == 1){
                 consultNum = 100000000;
             }
             
