@@ -35,7 +35,7 @@ public class Patient extends Entity {
                 "State: " + getState() + "\n" +
                 "Zipcode: " + getZip() + "\n" +
                 "Enrollment Status: " +
-                ((getStatus())? "Active" : "Inactive") +
+                ((getStatus())? "Active" : "Inactive") + '\n' +
                 "Financial Standing: " +
                 ((getFinancialStanding())? "Active" : "Inactive");
 
