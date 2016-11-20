@@ -3,6 +3,7 @@ import java.util.Scanner;
 import java.util.jar.Pack200;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.Vector;
 
 /*
 JAVADOC NOTES:
@@ -32,8 +33,6 @@ public class Terminal {
 
     public static void main(String [] args){
 
-        Database db= new Database("database.db");
-
         /*
         create database - check validity
          */
@@ -55,7 +54,8 @@ public class Terminal {
                 case 1: System.out.println("Entering Manager Terminal...." + '\n');
                         managerTerminal(db);
                         break;
-                case 2: System.out.println("Operator Terminal:" + '\n');
+                case 2: System.out.println("Entering Operator Terminal:" + '\n');
+                        operatorTerminal(db);
                         break;
                 case 3: System.out.println("Provider Terminal:" + '\n');
                         break;
@@ -82,22 +82,26 @@ public class Terminal {
                                     "For Reports:  (6) EFT  (7) Summary (8) Patient (9) Provider \n" +
                                     "Other:        (10) Exit Manger Terminal \n";
         final String prompt = "Enter option: ";
-        int mmMax = 9;
+        int mmMax = 10;
         int mmMin = 1;
         int option = 0;
 
 
-        System.out.println(managerMenu);
-        while (option != 9){
-
+       // System.out.println(managerMenu);
+        while (option != 10){
+            System.out.println(managerMenu);
             option = getInt(prompt, mmMin, mmMax);
 
             switch(option){
                 case 1: //List services
-                        /* -- TODO: Update print vector when Mike changes print function */
-                        db.printAllServices();
+                        Vector<Service> services = db.getAllServices();
+                        System.out.println("All services");
+                        for (Service s : services){
+                            System.out.println(s);
+                        }
                         break;
                 case 2: //Add service
+                     /* --- TODO: Add confirmation for service object add? */
                         System.out.println("Adding service...");
                         Service service = getService();
                         int id = db.addService(service);
@@ -108,7 +112,7 @@ public class Terminal {
                         }
                         break;
                 case 3: //Update service
-                        /* --- TODO: Add confirmation for service object update */
+                        /* --- TODO: Add confirmation for service object update? */
                         int updateServiceId = getInt("Please enter the service code: ", 0, 999999);
                         System.out.println("Please enter the new...");
                         Service updateService = getService();
@@ -130,7 +134,9 @@ public class Terminal {
                 case 5: //Reinstate deleted service
                         int reinstateServiceId = getInt("Please enter the code for the service you'd like to reinstate: ", 0, 999999);
                         if(db.reinstateService(reinstateServiceId)){
-                            System.out.println("Reinstate ID " + reinstateServiceId);
+                            System.out.println("Reinstated service code " + reinstateServiceId);
+                        } else {
+                            System.out.println("Failed to reinstate service code " + reinstateServiceId);
                         }
                         break;
 
@@ -172,7 +178,7 @@ public class Terminal {
                 validInput = true;
             } catch (InputException e) {
                 //Prompt exception, force valid input
-                System.out.println("Invalid input: " + e + "\n please try again..");
+                System.out.println("Invalid input: " + e.getMessage() + "\n please try again..");
             }
         }
 
@@ -180,12 +186,123 @@ public class Terminal {
     }
 
     /**
-     *
+     * Virtualizes operator terminal
+     * @param Database
      */
-    private static void operatorTerminal(){
+    private static void operatorTerminal(Database db){
+        final String operatorMenu =  "@Operator Terminal \n" +
+                "For Patient:   (1) Add  (2) Update  (3) Delete (4) Reinstate\n" +
+                "For Provider:  (5) Add  (6) Update  (7) Delete (8) Reinstate\n" +
+                "Other:         (8) Exit Operator Terminal \n";
+        final String prompt = "Enter option: ";
+        int omMax = 8;
+        int omMin = 1;
+        int option = 0;
+
+        while (option != 8 ){
+            System.out.print(operatorMenu);
+            option = getInt(prompt,omMin, omMax);
+
+            /* TODO: Remove this testing method */
+            Vector<Entity> patients = db.getAllPatients();
+            for(Entity e: patients ){
+                System.out.println(e + "\n");
+            }
+            switch(option) {
 
 
 
+
+                case 1: //Add patient
+                        Patient newPatient = getPatient();
+                        int newPatientId = db.addPatient(newPatient);
+
+                        if(newPatientId > 0){
+                            newPatient.setIdNumber(newPatientId);
+                            System.out.println("Successfully added: \n" + newPatient);
+                        } else if (newPatientId < -1){
+                            System.out.println("Patient " + newPatient.getName() + " already exists");
+                        }
+                        break;
+                case 2: //Update patient
+                        Patient updatePatient = getPatient();
+                        int updatePatientId = getInt("Please enter patient ID: ", 0, 999999999);
+                        //Report success of update to user
+                        if(db.updatePatient(updatePatientId, updatePatient)) {
+                            System.out.println("Updated patient " + updatePatientId);
+                        } else {
+                            System.out.println("Failed to update Patient " + updatePatientId);
+                        }
+                        break;
+                case 3: //Delete patient
+                        int deletePatientId = getInt("Please enter the ID for the Patient to be deleted: ", 0, 999999999);
+                        //Report success of deletion to user
+                        if(db.removePatient(deletePatientId)){
+                            System.out.println("Removed patient " + deletePatientId);
+                        } else {
+                            System.out.println("Failed to remove patient " + deletePatientId);
+                        }
+                        break;
+                case 4: //Reinstate patient
+                        int reinstatePatientId = getInt("Please enter the ID for the Patient to be reinstated: ", 0, 999999999);
+                        if(db.reinstatePatient(reinstatePatientId)){
+                            System.out.println("Reinstated " + reinstatePatientId);
+                        } else {
+                            System.out.println("Failed to reinstate " + reinstatePatientId);
+                        }
+                        break;
+                case 5: //Add provider
+                        break;
+                case 6: //Delete provider
+                        break;
+                case 7: //Reinstate provider
+                        break;
+                case 8: //Quit
+                        break;
+                default:
+                    System.out.println("Invalid selection, please try again...");
+                    break;
+            }
+
+
+        }
+
+
+
+
+    }
+    /** Creates patient object with valid name, address, city, state, zip
+
+        @return Patient object with PII
+     */
+
+    private static Patient getPatient()
+    {
+        Patient patient = null;
+        boolean validInput = false;
+
+        while(!validInput) {
+            //Takes name and fee - database handles the rest for add, ID is passed separate for Update
+            String name = getString("Please enter the patient name: ", 1, 25);
+            String address = getString("Please enter the patients address: ", 1, 25);
+            String city = getString("Please enter the patients city: ", 1, 14);
+            String state = getString("Please enter the patients state (ex. OR, AZ): ", 2, 2);
+            /* TODO: Validate 5-digit zip with regex? */
+            String zip = getString("Please enter the patients zip (5 digits): ", 5, 5);
+            boolean status = getConfirmation("Is patient active? ");
+            boolean financialStanding = getConfirmation("Is patient in good financial standing? ");
+            //Try creating new patient
+            try {
+                patient = new Patient(0, name, address, city, state, zip, status, financialStanding);
+                validInput = true;
+            } catch (InputException e) {
+                //Prompt exception, force valid input
+                System.out.println("Invalid input: " + e.getMessage() + "\nplease try again..");
+
+            }
+        }
+
+        return patient;
     }
 
     /**
@@ -275,6 +392,28 @@ public class Terminal {
             clearScanner(sc);
         }
         return ret;
+    }
+
+    /**
+     * For getting user confirmation. Prompt + (Yes/No): is displayed, and user response is returned
+     * @param prompt
+     * @return True is yes is entered, False if else
+     */
+
+    private static boolean getConfirmation(String prompt)
+    {
+        String ret;
+        boolean confirmation = false;
+
+        System.out.print(prompt + " (Yes/No):");
+        ret = sc.nextLine();
+        if (ret.equalsIgnoreCase("yes") || ret.equalsIgnoreCase("y")) {
+            confirmation = true;
+        } else {
+            confirmation = false;
+        }
+
+        return confirmation;
     }
 
     /**
