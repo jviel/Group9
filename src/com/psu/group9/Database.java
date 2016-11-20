@@ -44,7 +44,7 @@ public class Database {
             ResultSet serviceSet = meta.getTables(null, null, "Services", null);
             ResultSet transactionSet = meta.getTables(null, null, "Transactions", null);
             ResultSet providerSet = meta.getTables(null, null, "Providers", null);
-            ResultSet consultRs = stmt.executeQuery("SELECT MAX(ConsultID) FROM Transactions");
+            ResultSet consultRs = null;
 
             /*---Queries used to create tables---*/
             String patientQuery = 
@@ -121,13 +121,14 @@ public class Database {
             checkColumns("Providers", providerColumns);
             checkColumns("Transactions", transactionColumns);
             checkColumns("Services", serviceColumns);      
-
+            
             /*---Get last used ID's. Set them to correct size---*/
             patientNum      = 100000000 + getRowsCount("Patients");
             providerNum     = 100000000 + getRowsCount("Providers");
             transactionNum  = 100000000 + getRowsCount("Transactions");
             serviceNum      = 100000 + getRowsCount("Services");
 
+            consultRs = stmt.executeQuery("SELECT MAX(ConsultID) FROM Transactions");
             if(consultRs.next()){
                 consultNum = consultRs.getInt(1) + 1;
             } else {
@@ -138,6 +139,7 @@ public class Database {
             serviceSet.close();
             transactionSet.close();
             providerSet.close();
+            consultRs.close();
         } 
         /*---Kill the program if there were any problems with the database---*/
         catch (SQLException e) {
