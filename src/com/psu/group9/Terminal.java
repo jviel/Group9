@@ -1,7 +1,11 @@
 package com.psu.group9;
+import com.sun.tools.javac.util.*;
+
+import javax.swing.tree.TreeNode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.jar.Pack200;
 import java.util.Scanner;
 import java.util.Vector;
@@ -40,7 +44,7 @@ public class Terminal {
                 case 2: System.out.println("Entering Operator Terminal:" + '\n');
                         operatorTerminal(db);
                         break;
-                case 3: System.out.println("Provider Terminal:" + '\n');
+                case 3: System.out.println("Entering Provider Terminal:" + '\n');
                         providerTerminal(db);
                         break;
                 case 4: System.out.println("Thank you for using CA!");
@@ -420,16 +424,18 @@ public class Terminal {
         int mmMin = 1;
         int option = 0;
 
-        /* --- TEST OBJECTS --- */
-        try {
-            db.addService(new Service(10001, "soothing massage", 45.00f, 1));
-            db.addPatient(new Patient(10000, "Gilmore", "123 main st.", "Portland","OR","97202",1,1));
-            db.addProvider(new Provider(10000, "Spa-tan Anonymous", "123 main st.", "Portland","OR","97202", true));
-        }
-        catch (InputException ex){
-            System.out.println("no good");
-        }
-        /* --- END TEST OBJECTS --- */
+        // TODO: add provider id verification. Need id for adding transactions
+
+        /* --- TEST DATA --- */
+//        try {
+//            db.addService(new Service(10001, "Haircut", 45.00f, 1));
+//            db.addPatient(new Patient(10000, "Wonderboy", "123 main st.", "Portland","OR","97202",1,1));
+//            db.addProvider(new Provider(10000, "Spa-tan extreme", "123 main st.", "Portland","OR","97202", true));
+//        }
+//        catch (InputException ex){
+//            System.out.println("no good");
+//        }
+        /* --- END TEST DATA --- */
 
         while (option != mmMax){
 
@@ -445,6 +451,8 @@ public class Terminal {
                         System.out.println(svc);
                     break;
                 case 3: // List patients in history
+                    // --- TODO: set provider id to login value --- //
+                    // --- TODO: add getPatientsByProviderID?   --- //
                     break;
                 case 4: // quit
                     System.out.println("Logging out of provider terminal\n");
@@ -479,18 +487,18 @@ public class Terminal {
         do{
             int id = getInt("Enter patient id: ", 0, 999999999);
             patient = db.getPatientByID(id);
-            if (patient.size() > 0)
-                // TODO: confirm correct patient
-                validPatient = true;
+            if (patient.size() > 0) {
+                if(getConfirmation("\nAdd consultation for following patient?\n" + patient.elementAt(0) + "\n"))
+                    validPatient = true;
+            }
             else
                 System.out.println("Could not find patient with id " + id);
         } while (!validPatient);
 
         while (option != mmMax){
 
-            System.out.println("\n" + consultDate + ": " +
-                    patient.firstElement().getName() +
-                    "(" + patient.firstElement().getIdNumber() + ")");
+            System.out.println("\nConsultation " + consultDate + " for patient: " + patient.firstElement().getName() +
+                               " (id: " + patient.firstElement().getIdNumber() + ")");
             System.out.println(consulationMenu);
             option = getInt(prompt, mmMin, mmMax);
 
@@ -507,9 +515,9 @@ public class Terminal {
                     try {
                         consultation.add(new Transaction(
                                 patient.firstElement().getIdNumber(), // patient id
-                                12345,                                // provider id
+                                123456789,                            // provider id
                                 id,                                   // service id
-                                123,                                  // consultation number
+                                123456,                               // consultation number
                                 consultDate,                          // service date
                                 comment                               // comments
                         ));
@@ -519,18 +527,27 @@ public class Terminal {
                     break;
 
                 case 3: // View consultation
-                    for (Transaction t : consultation)
+                    if (consultation.size() == 0) {
+                        System.out.println("No services added to consultation yet");
+                        break;
+                    }
+                    int count = 1;
+                    System.out.println("\nConsultation " + consultDate + " for patient: " + patient.firstElement().getName() +
+                            " (id: " + patient.firstElement().getIdNumber() + ")");
+                    for (Transaction t : consultation) {
+                        System.out.println("Service " + count++);
                         System.out.println(t);
+                    }
                     break;
 
                 case 4: // Save
-                    for (Transaction t : consultation)
-                        db.addTransaction(t);
+                    if (db.addConsultation(consultation) >= 0);
                     System.out.println("Added Consultation successfully.");
                     option = mmMax; // break
                     break;
 
                 case 5: // Cancel
+                    System.out.println("Consultation canceled.");
                     option = mmMax;
                     break;
 
