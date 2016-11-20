@@ -421,13 +421,14 @@ public class DBTest {
     // Transaction Unit Tests
     
     // Adding a Transaction.
-    
+   
+    /*
     @Test
     public void D001addTransactionTest() {
         int ID;    
         try {
             Transaction newTransaction = new Transaction(100000000, 100000000, 100000, 100000000, "11-01-2016", "Stuff");
-            ID = db.addTransaction(newTransaction);
+            ID = db.addTransaction(newTransaction, 1);
             assertTrue(ID > 99999999);
 
         } catch (InputException e) {
@@ -533,7 +534,7 @@ public class DBTest {
             fail();
         }
     }
-    
+    */
     // We add another Patient, make him inactive, and reinstate it again.
     @Test
     public void E001suspendAndReinstatePatientTest() {
@@ -657,9 +658,64 @@ public class DBTest {
             fail();
         }
     }
+    
+    // We add a couple of transactions inside a consultation and add the consultation.
+    // Said consultation should be good.
+    @Test
+    public void G001addConsultationTest() {
+    	Vector<Transaction> transVec = new Vector<Transaction>();
+    	try {
+    		transVec.add(new Transaction(100000000, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
+    		transVec.add(new Transaction(100000000, 100000000, 100001, 0, "11-20-2016", "Transaction 2"));
+    		
+    		int ID = db.addConsultation(transVec);
+    		
+    		assertTrue("Consultation was successful", ID > 99999999);
+    	}
+    	catch(InputException e) {
+    		System.err.println(e.getMessage());
+    		fail();
+    	}
+    		
+    }
+    
+    // Now, we add an invalid Patient ID.
+    @Test
+    public void G002addConsultationTest2() {
+    	Vector<Transaction> transVec = new Vector<Transaction>();
+    	try {
+    		transVec.add(new Transaction(100000000, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
+    		transVec.add(new Transaction(101892310, 100000000, 100001, 0, "11-20-2016", "Transaction 2"));
+    	
+    		int ID = db.addConsultation(transVec);
+		
+    		assertTrue("Consultation failed", ID < 0);
+	    }
+    	catch(InputException e) {
+    		System.err.println(e.getMessage());
+    		fail();
+    	}
+    }
+    
+    // Next, we add a suspended Patient and try to add that one as well.
+    @Test
+    public void G003addConsultationTest3() {
+    	Vector<Transaction> transVec = new Vector<Transaction>();
+    	Vector<Entity> patientVec = new Vector<Entity>();
+    	try {
+    		Patient newPatient = new Patient(0, "Jim Jones", "1859 Geary Boulevard", "San Francisco", "CA", "94115", true, true);
+    		int ID = db.addPatient(newPatient);
+    		transVec.add(new Transaction(ID, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
+    		db.removePatient(ID);
+    		ID = db.addConsultation(transVec);
+    		assertTrue("Consultation failed", ID < 0);
+    	}
+    	catch(InputException e) {
+    		System.err.println(e.getMessage());
+    		fail();
+    	}
+    }
 
-       
-      
     /*
     // We update the first service, setting it equal to "Test Service2", 94.00F.
     @Test
@@ -924,6 +980,7 @@ public class DBTest {
     }
   
     public void addTransactions(String filename) {
+        int consultID = 100000000;
         String line;
         Transaction currentTransaction;
         int currentTransactionID;
@@ -946,7 +1003,10 @@ public class DBTest {
                             splitLine[0],                      // Service Date
                             splitLine[5]                       // Comment
                             );
-                    currentTransactionID = db.addTransaction(currentTransaction);
+                    Vector<Transaction> consultation = new Vector<Transaction>();
+                    consultation.add(currentTransaction);
+                    db.addConsultation(consultation);
+                    //currentTransactionID = db.addTransaction(currentTransaction, consultID);
                 }
                 catch(InputException e) {
                     System.out.println("Error for " + 
