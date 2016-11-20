@@ -129,12 +129,11 @@ public class Database {
             serviceNum      = 100000 + getRowsCount("Services");
 
             consultRs = stmt.executeQuery("SELECT MAX(ConsultID) FROM Transactions");
-            if(consultRs.next()){
-                consultNum = consultRs.getInt(1) + 1;
-            } else {
+            consultNum = consultRs.getInt(1);
+            if(consultNum == 0){
                 consultNum = 100000000;
             }
-
+            
             patientSet.close();
             serviceSet.close();
             transactionSet.close();
@@ -1050,7 +1049,6 @@ public class Database {
     }
     // All of the database getter functions, which execute the private getter
     // functions listed above with various tables, columns, and criteria.
-
 
     public Vector<Entity> getPatientByID(int ID) {
         return getEntityByID("Patients", ID);
