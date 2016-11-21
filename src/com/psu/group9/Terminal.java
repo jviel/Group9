@@ -89,7 +89,7 @@ public class Terminal {
                         Service service = getService();
                         int id = db.addService(service);
                         if (id > 0){
-                            System.out.println("Added: \n" + service.toString());
+                            System.out.println("Added: " + service.getName());
                         } else if (id < -1) {
                             System.out.println("Service " + service.getName() + " already exists.");
                         }
