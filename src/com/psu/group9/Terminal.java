@@ -414,7 +414,7 @@ public class Terminal {
      */
     private static void providerTerminal(Database db){
 
-        final String providerMenu =  "@Provider Terminal \n" +
+        final String providerMenu =
                 "(1) Start new consultation\n" +
                 "(2) List available services\n" +
                 "(3) List patients in consultation history\n" +
@@ -424,48 +424,44 @@ public class Terminal {
         int mmMin = 1;
         int option = 0;
 
-        // TODO: add provider id verification. Need id for adding transactions
-
-        /* --- TEST DATA --- */
-//        try {
-//            db.addService(new Service(10001, "Haircut", 45.00f, 1));
-//            db.addPatient(new Patient(10000, "Wonderboy", "123 main st.", "Portland","OR","97202",1,1));
-//            db.addProvider(new Provider(10000, "Spa-tan extreme", "123 main st.", "Portland","OR","97202", true));
-//        }
-//        catch (InputException ex){
-//            System.out.println("no good");
-//        }
-        /* --- END TEST DATA --- */
+        // LOGIN: Get Provider ID info
+        int id = getInt("Please enter your provider ID number: ", 0, 999999999);
+        Vector<Entity> provider = new Vector<Entity>(db.getProviderByID(id));
+        if (provider.size() == 0){
+            System.out.println("Invalid provider number");
+            return;
+        }
 
         while (option != mmMax){
 
+            System.out.print("@Provider terminal : " + provider.elementAt(0).getName());
             System.out.println("\n" + providerMenu);
             option = getInt(prompt, mmMin, mmMax);
 
             switch(option){
-                case 1: // Start consultation, needs submenu
-                    addConsultation(db);
+                case 1: // Start consultation
+                    addConsultation(db, provider);
                     break;
                 case 2: // List services
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
                     break;
                 case 3: // List patients in history
-                    // --- TODO: set provider id to login value --- //
                     // --- TODO: add getPatientsByProviderID?   --- //
                     break;
                 case 4: // quit
                     System.out.println("Logging out of provider terminal\n");
                     break;
-                default: System.out.println("Option " + option + " not valid");
+                default:
+                    System.out.println("Option " + option + " not valid");
                     break;
             }
         }
     }
 
-    private static void addConsultation(Database db) {
+    private static void addConsultation(Database db, Vector<Entity> provider) {
         final String consulationMenu =
-                "@Consultation menu\n" +
+                "@Consultation menu : " + provider.elementAt(0).getName() + "\n" +
                 "(1) List available services\n" +
                 "(2) Add service to this consultation\n" +
                 "(3) View consultation so far\n" +
@@ -480,20 +476,28 @@ public class Terminal {
         int mmMin = 1;
         int mmMax = 6;
 
+        /* -- Get Patient info -- */
+        do{
+            int id = getInt("Enter patient id: ", 0, 999999999);
+            patient = db.getPatientByID(id);
+            if (patient.size() > 0 && patient.elementAt(0).getStatus()) { // Confirm correct patient
+                if(getConfirmation("\nAdd consultation for following patient?\n" + patient.elementAt(0) + "\n"))
+                    validPatient = true;
+            }
+            else if (patient.size() > 0 && !patient.elementAt(0).getStatus()) { // patient is inactive
+                System.out.println("*** Patient inactive ***\n" + patient.elementAt(0) + "\n --> Consult ChocAn for details");
+                System.out.println("Canceling consultation");
+                return;
+            }
+            else // patient not fount
+                System.out.println("Could not find patient with id " + id);
+        } while (!validPatient);
+
+        /* -- Enter consultation date -- */
         do{
             consultDate = getString("Enter the consultation date in the form \"MM-DD-YYYY\": ", 10, 10);
         } while (!isValidShortDate(consultDate));
 
-        do{
-            int id = getInt("Enter patient id: ", 0, 999999999);
-            patient = db.getPatientByID(id);
-            if (patient.size() > 0) {
-                if(getConfirmation("\nAdd consultation for following patient?\n" + patient.elementAt(0) + "\n"))
-                    validPatient = true;
-            }
-            else
-                System.out.println("Could not find patient with id " + id);
-        } while (!validPatient);
 
         while (option != mmMax){
 
@@ -515,9 +519,9 @@ public class Terminal {
                     try {
                         consultation.add(new Transaction(
                                 patient.firstElement().getIdNumber(), // patient id
-                                123456789,                            // provider id
+                                provider.elementAt(0).getIdNumber(),  // provider id
                                 id,                                   // service id
-                                123456,                               // consultation number
+                                0,                                    // arbitrary consultation id (set by db.addTransaction())
                                 consultDate,                          // service date
                                 comment                               // comments
                         ));
@@ -532,17 +536,23 @@ public class Terminal {
                         break;
                     }
                     int count = 1;
-                    System.out.println("\nConsultation " + consultDate + " for patient: " + patient.firstElement().getName() +
+                    System.out.println("\n\tConsultation " + consultDate + " for patient: " + patient.firstElement().getName() +
                             " (id: " + patient.firstElement().getIdNumber() + ")");
                     for (Transaction t : consultation) {
-                        System.out.println("Service " + count++);
-                        System.out.println(t);
+                        System.out.println("\t---------------------------");
+                        System.out.println("\tItem " + count++);
+                        System.out.println("\tService ID: " + t.getServiceID());
+                        System.out.println("\tComments: " + t.getComments());
                     }
                     break;
 
                 case 4: // Save
-                    if (db.addConsultation(consultation) >= 0);
-                    System.out.println("Added Consultation successfully.");
+                    if (consultation.size() == 0)
+                        System.out.println("No services added. Canceling consultation.");
+                    else if (db.addConsultation(consultation) >= 0)
+                        System.out.println("Added Consultation successfully.");
+                    else
+                        System.out.println("There was an error adding the consultation to the database");
                     option = mmMax; // break
                     break;
 
