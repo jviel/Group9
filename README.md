@@ -1,5 +1,8 @@
 # **do not push directly to origin/master!**  
 
+## Test Database instructions
+Run `DBTest.java` from the tests folder. It generates a db in your project dir called `testDB.db`. Rename that file to `database.db` and Terminal will then recognize it as the main db.  
+
 # Adding JDBC
 
 Go to [here](https://bitbucket.org/xerial/sqlite-jdbc/downloads) and select a jar. The requirements document specifies Version 3.14.2.1, but later versions also work.

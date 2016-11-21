@@ -129,8 +129,8 @@ public class Database {
             serviceNum      = 100000 + getRowsCount("Services");
 
             consultRs = stmt.executeQuery("SELECT MAX(ConsultID) FROM Transactions");
-            consultNum = consultRs.getInt(1);
-            if(consultNum == 0){
+            consultNum = consultRs.getInt(1) + 1;
+            if(consultNum == 1){
                 consultNum = 100000000;
             }
             
@@ -980,9 +980,7 @@ public class Database {
                                 rs.getInt("FinancialStanding")
                                 )
                             );
-                }
-
-                if(IDColumn.matches("ProviderID")) {
+                } else if(IDColumn.matches("ProviderID")) {
                     returnVec.add( new Provider(
                                 rs.getInt("ProviderID"),
                                 rs.getString("Name"),
@@ -1120,7 +1118,7 @@ public class Database {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM " + "Services" + " WHERE " + "ServiceID = " + Integer.toString(ID));
+            rs = stmt.executeQuery("SELECT * FROM Services WHERE ServiceID = " + Integer.toString(ID));
 
             if(rs.next()) {
                 returnVec.add( new Service(
@@ -1179,7 +1177,7 @@ public class Database {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM " + "Services" + " WHERE " + "Fee = " + Float.toString(price));
+            rs = stmt.executeQuery("SELECT * FROM Services WHERE Fee = " + Float.toString(price));
 
             while(rs.next()) {
                 returnVec.add( new Service(
@@ -1239,7 +1237,7 @@ public class Database {
         Vector<Transaction> returnVec = new Vector<Transaction>();
 
         try {
-            stmt = conn.prepareStatement("SELECT * FROM " + "Transactions" + " WHERE " + column + " = ?");
+            stmt = conn.prepareStatement("SELECT * FROM Transactions WHERE " + column + " = ?");
             stmt.setInt(1, criteria);
             rs = stmt.executeQuery();
 
@@ -1274,7 +1272,7 @@ public class Database {
         Vector<Transaction> returnVec = new Vector<Transaction>();
 
         try {
-            stmt = conn.prepareStatement("SELECT * FROM " + "Transactions" + " WHERE " + column + " = ?");
+            stmt = conn.prepareStatement("SELECT * FROM Transactions WHERE " + column + " = ?");
             stmt.setString(1, criteria);
             rs = stmt.executeQuery();
 
@@ -1416,10 +1414,12 @@ public class Database {
         return returnVec;
     }
 
+    /*---Returns a vector of patients objects with Status=1---*/
     public Vector<Entity> getAllActivePatients()  {
         return getAllActiveEntities("Patients");
     }
-
+    
+    /*---Returns a vector of provider objects with Status=1---*/
     public Vector<Entity> getAllActiveProviders()  {
         return getAllActiveEntities("Providers");
     }
@@ -1470,8 +1470,8 @@ public class Database {
             // pastDate = 7 days before currentDate.
             pastDate.setTime(currentDate.getTime() - (long)7 * 1000 * 60 * 60 * 24);
 
-            stmt = conn.prepareStatement("SELECT * FROM " + "Transactions" + " WHERE " + column + 
-                    " = ? AND " + "ServiceDate >= ? AND ServiceDate <= ?");
+            stmt = conn.prepareStatement("SELECT * FROM Transactions WHERE " + column + 
+                    " = ? AND ServiceDate >= ? AND ServiceDate <= ?");
 
             stmt.setInt(1, ID);
             stmt.setString(2, outputFormat.format(pastDate));
@@ -1509,6 +1509,8 @@ public class Database {
     public Vector<Transaction> getWeekTransactionsByProvider(int ID, String date) {
         return getWeekTransactions("ProviderID", ID, date);
     }
+    
+    /*---Returns a vector of service objects with Status=0---*/
     public Vector<Service> getInactiveServices() {
         Vector<Service> returnVec = new Vector<Service>();
         try {
@@ -1532,6 +1534,7 @@ public class Database {
 
         return returnVec;
     }
+    
     /*---Converts MM-DD-YYYY to YYYY-MM-DD--*/
     private String toSQLDate(String outputDate) {
         SimpleDateFormat inputFormat = new SimpleDateFormat("MM-dd-yyyy");
