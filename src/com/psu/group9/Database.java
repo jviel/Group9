@@ -238,8 +238,8 @@ public class Database {
             stmt.setString(4, newPatient.getCity());
             stmt.setString(5, newPatient.getState());
             stmt.setString(6, newPatient.getZip());
-            stmt.setBoolean(7, true);
-            stmt.setBoolean(8, true);
+            stmt.setBoolean(7, newPatient.getFinancialStanding());
+            stmt.setBoolean(8, newPatient.getStatus());
             stmt.executeUpdate();
             patientNum++;
             stmt.close();

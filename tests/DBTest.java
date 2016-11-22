@@ -54,7 +54,7 @@ public class DBTest {
         public void A002addPatientTest2() {
             int ID;    
             try {
-                Patient newPatient = new Patient(0, "Tom Bottini", "24 Dartmouth Dr", "Framingham", "MA", "01701", true, true);
+                Patient newPatient = new Patient(0, "Tom Bottini", "24 Dartmouth Dr", "Framingham", "MA", "97122", true, false);
                 ID = db.addPatient(newPatient);
                 assertTrue(ID < 0);
 
@@ -105,7 +105,7 @@ public class DBTest {
         
     }
     
-    // We try to update Michael Bottini to become Tom Bottini, 24 Dartmouth Dr, Framingham, MA, 01701, true, true.
+    // We try to update Michael Bottini to become Tom Bottini, 24 Dartmouth Dr, Framingham, MA, 97122, true, false.
     
     @Test
     public void A005updatePatientTest2() {
@@ -114,7 +114,7 @@ public class DBTest {
             int ID = serviceVec.get(0).getIdNumber();
             
             try {
-                Patient updatePatient = new Patient(ID, "Tom Bottini", "24 Dartmouth Dr", "Framingham", "MA", "01701", true, true);
+                Patient updatePatient = new Patient(ID, "Tom Bottini", "24 Dartmouth Dr", "Framingham", "MA", "97122", true, false);
                 Boolean updated = db.updatePatient(ID, updatePatient);
                 assertFalse(updated);
             }
@@ -828,7 +828,7 @@ public class DBTest {
         Patient currentPatient;
         int currentPatientID;
         int lineNumber = 1;
-
+        
         // Fatal exception try.
             try {
                 BufferedReader reader = new BufferedReader(
@@ -845,8 +845,8 @@ public class DBTest {
                                 splitLine[2], // City
                                 splitLine[3], // State
                                 splitLine[4], // Zipcode
-                                true,            // Enrollment Status
-                                true            // Financial Standing
+                                true,           // Enrollment Status
+                                Boolean.parseBoolean(splitLine[5])            // Financial Standing
                                 );
                         currentPatientID = db.addPatient(currentPatient);
                     }
