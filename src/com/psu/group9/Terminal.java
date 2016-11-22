@@ -611,21 +611,29 @@ public class Terminal {
     {
         int ret = -1;
         boolean valid = false;
+        String input;
+        Scanner linebuf;
 
         while(!valid)
         {
             try {
                 System.out.print(prompt);
-                ret = sc.nextInt(); // throws InputMismatchException if not an int
+                input = sc.nextLine();
+
+                if (input.length() == 0)
+                    throw new InputMismatchException();
+                linebuf = new Scanner(input);
+                ret = linebuf.nextInt(); // throws InputMismatchException if not an int
+                linebuf.close();
+
                 if (ret < min || ret > max)
                     throw new InputMismatchException();
                 else
                     valid = true;
             }
-            catch (InputMismatchException ex) {
+            catch (NoSuchElementException e) {
                 System.out.println("Value must be a number between " + min + " and " + max);
             }
-            clearScanner(sc);
         }
         return ret;
     }
@@ -640,21 +648,29 @@ public class Terminal {
     {
         float ret = -1f;
         boolean valid = false;
+        String input;
+        Scanner linebuf;
 
         while(!valid)
         {
             try {
                 System.out.print(prompt);
-                ret = sc.nextFloat(); // throws InputMismatchException if not a float
+                input = sc.nextLine();
+
+                if (input.length() == 0)
+                    throw new InputMismatchException();
+                linebuf = new Scanner(input);
+                ret = linebuf.nextFloat(); // throws InputMismatchException if not a float
+                linebuf.close();
+
                 if (ret < min || ret > max)
                     throw new InputMismatchException();
                 else
                     valid = true;
             }
-            catch (InputMismatchException ex) {
+            catch (NoSuchElementException e) {
                 System.out.println("Value must be a decimal number between " + min + " and " + max);
             }
-            clearScanner(sc);
         }
         return ret;
     }
@@ -679,17 +695,5 @@ public class Terminal {
         }
 
         return confirmation;
-    }
-
-    /**
-     * When getting numerical input from user, if they enter a non-number, an exception is thrown but buffer
-     * retains input including '\n' character. This needs to be cleared to enter a new number.
-     * Does not apply after Scanner.nextLine() because this pops the '\n'
-     * @param Scanner
-     */
-    private static void clearScanner(Scanner s)
-    {
-        if (s.hasNextLine()) // presence of a newline character.
-            s.nextLine();
     }
 }
