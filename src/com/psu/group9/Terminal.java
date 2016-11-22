@@ -123,7 +123,7 @@ public class Terminal {
                         break;
 
                 case 6: //Print EFT Report
-                        eftReport();
+                        eftReport(db);
                         break;
                 case 7: //Print Summary Report
                         break;
@@ -131,6 +131,7 @@ public class Terminal {
                         patientReport(db);
                         break;
                 case 9: //Print Provider report
+                        providerReport(db);
                         break;
                 case 10: //quit...
                         break;
@@ -145,20 +146,84 @@ public class Terminal {
     }
 
     /**
-     * Inefficiently prints provider and patient reports. Obvi
+     * Inefficiently prints patient reports for week prior to day of method call
      * @param Database with weeks transactions
      */
 
+    /*TODO: Further testing */
     private static void patientReport(Database db)
     {
         String today = getDate();
         System.out.println("Today is: " + today);
-        System.out.println("##### Begining Patient Report ####\n");
+
+
+        /*TODO: REMOVE THIS TEST*/
+        //today = getString("Please enter a date: ", 0, 15);
+
+        System.out.println("##### Beginning Patient Report ####\n");
 
         //Look at all patients because some may have been invalidated in past week
         Vector<Entity> patients = db.getAllPatients();
 
-        for( Entity p : patients){
+        for(Entity p : patients){
+
+            //Get weeks transactions for patient ID
+            int id = p.getIdNumber();
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByPatient(id, today);
+
+            //if patient has transactions for this week, format report to string
+            if(!weekTransactions.isEmpty()){
+                int serviceCount = 1;
+
+                String pReport = "Patient Name: "     + p.getName()     + "\n"
+                                + "Patient ID: "      + p.getIdNumber() + "\n"
+                                + "Patient Address: " + p.getAddress()  + "\n"
+                                + "Patient City: "    + p.getCity()     + "\n"
+                                + "Patient State: "   + p.getState()    + "\n"
+                                + "Patient Zip:"      + p.getZip()      + "\n";
+
+                for (Transaction t : weekTransactions){
+                    pReport += "---Service " + serviceCount + "----\n";
+
+                    //Prerequisite 1: Get service name  - prints unresolved if db cannot find it
+                    String serviceName = "Unresolved";
+                    Vector<Service> service = db.getServiceByID(t.getServiceID());
+                    if (!service.isEmpty()){
+                        serviceName = service.elementAt(0).getName();
+                    }
+
+                    pReport += "Service date: " + t.getServiceDate() + "\n"
+                            + "Provider name: " + t.getProviderID()  + "\n"
+                            + "Service name: "  + serviceName        + "\n";
+
+                    serviceCount++;
+                }
+                System.out.println(pReport);
+            }
+        }
+
+        System.out.println("\n##### Ending Patient Report ####");
+    }
+
+    /**
+     * Prints provider reports for the week prior to day of method call
+     *
+     * @param Database that holds report data
+     */
+
+    /*TODO: Further testing, aaaand use a string builder??*/
+    private static void providerReport(Database db)
+    {
+        String today = getDate();
+        System.out.println("Today is: " + today);
+        System.out.println("##### Beginning Provider Report ####\n");
+        /*TODO: REMOVE THIS TEST*/
+        today = getString("Please enter a date: ", 0, 15);
+
+        //Look at all providers because some may have been invalidated in past week
+        Vector<Entity> providers = db.getAllProviders();
+
+        for( Entity p : providers){
 
             //Get week transaction for patient ID
             int id = p.getIdNumber();
@@ -166,55 +231,73 @@ public class Terminal {
 
             //if patient has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
-                int i = 1;
+                float feeTotal = 0;                                 //Total transaction fees
+                int serviceCount = 1;                               //Service # for printing
+                Set<Integer> consultations = new HashSet();         //Track unique consultation #'s
 
-                String pReport = "Patient Name: "     + p.getName() + "\n"
-                                + "Patient ID: "      + p.getIdNumber() + "\n"
-                                + "Patient Address: " + p.getAddress() + "\n"
-                                + "Patient City: "    + p.getCity() + "\n"
-                                + "Patient State: "   + p.getState() + "\n"
-                                + "Patient Zip:"      + p.getZip() + "\n";
+                String pReport = "Provider Name: "     + p.getName() +     "\n"
+                                + "Provider ID: "      + p.getIdNumber() + "\n"
+                                + "Provider Address: " + p.getAddress()  + "\n"
+                                + "Provider City: "    + p.getCity()     + "\n"
+                                + "Provider State: "   + p.getState()    + "\n"
+                                + "Provider Zip:"      + p.getZip()      + "\n";
+
                 for (Transaction t : weekTransactions){
+                    pReport += "---Service " + serviceCount + "----\n";
 
-                    pReport += "---Service " + i + "----\n";
-                    //Get service name in a terrible way - prints unresolved if db cannot find it
-                    String serviceName = "Unresolved";
+                    //Prerequisite 1: Get patient name - prints as "unresolved" if db cannot find it
+                    String patientName = "Unresolved";
+                    Vector<Entity> patient = db.getPatientByID(t.getPatientID());
+                    if (!patient.isEmpty()){
+                        patientName = patient.elementAt(0).getName();
+                    }
+
+                    //Prerequisite 2: Get service fee as String - prints as "Unresolved" if not found by db
+                    float serviceFee = -1f;
                     Vector<Service> service = db.getServiceByID(t.getServiceID());
                     if (!service.isEmpty()){
-                        serviceName = service.elementAt(0).getName();
+                        serviceFee = service.elementAt(0).getFee();
+                        feeTotal += serviceFee;
+
                     }
-                    pReport += "Service date: " + t.getServiceDate() + "\n"
-                            + "Provider name: " + t.getProviderID() + "\n"
-                            + "Service name: "  + serviceName + "\n";
-                    //Increment service
-                    i++;
+
+                    //Add report information
+                    pReport += "Service date: "   + t.getServiceDate()         + "\n"
+                            + "Submission Time: " + t.getDateTime()            + "\n"
+                            + "Patient Name: "    + patientName                + "\n"
+                            + "Patient ID: "      + t.getPatientID()           + "\n"
+                            + "Service ID: "      + t.getServiceID()           + "\n"
+                            + "Fee: "             + Float.toString(serviceFee) + "\n";       /*TODO: Should I clean this up?*/
+
+                    serviceCount++;                                                        //Increment service count
+                    consultations.add(new Integer(t.getConsultationNumber()));             //Add consultation ID to set
                 }
-                System.out.println(pReport);
+
+                pReport += "*Number of consultations: " + consultations.size() + "\n"
+                        +  "*Total Fee Owed: " + feeTotal + "\n\n";
+                System.out.println(pReport);                                              //Report prints here
             }
         }
 
-        /* Test data
-        Vector<Transaction> allTransactions = db.getAllTransactions();
-        for(Transaction t : allTransactions){
-            System.out.println(t);
-        }
-        */
-
-        System.out.println("\n##### Ending Patient Report ####");
-
+        System.out.println("\n##### Ending Provider Report ####");
     }
 
-    
 
-    private static void eftReport()
+    /**
+     * Not sure what this one needs to do - just print data for now
+     * @param Database that contains transactional data
+     */
+
+    private static void eftReport(Database db)
     {
         String today = getDate();
         System.out.println("Today is: " + today);
 
-
-
-
-
+        // Test data
+        Vector<Transaction> allTransactions = db.getAllTransactions();
+        for(Transaction t : allTransactions){
+            System.out.println(t);
+        }
 
     }
     /**
