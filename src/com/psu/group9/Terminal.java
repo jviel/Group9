@@ -1,12 +1,8 @@
 package com.psu.group9;
-import com.sun.tools.javac.util.*;
 
-import javax.swing.tree.TreeNode;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
-import java.util.jar.Pack200;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -19,7 +15,6 @@ public class Terminal {
     static Scanner sc = new Scanner(System.in);
 
     public static void main(String [] args){
-
 
         //create database, terminates if errored
         Database db = new Database("database.db");
@@ -160,7 +155,7 @@ public class Terminal {
         while(!validInput) {
             //Takes name and fee - database handles the rest for add, ID is passed separate for Update
             String name = getString("Please enter the service name: ", 0, 21);
-            Float fee = getFloat("Please enter the fee: ", -1f, 1000f);
+            Float fee = getFloat("Please enter the fee: ", 0f, 9999.99f);
 
             try {
                 service = new Service(0, name, fee, 1);
