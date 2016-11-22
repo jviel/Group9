@@ -88,7 +88,9 @@ public class Terminal {
                         Service service = getService();
                         int id = db.addService(service);
                         if (id > 0){
-                            System.out.println("Added: " + service.getName());
+                            System.out.println("Added: " + service.getName() + "\n" +
+                                               "ID:    " + id + "\n" +
+                                               "fee:   " + service.getFee());
                         } else if (id < -1) {
                             System.out.println("Service " + service.getName() + " already exists.");
                         }
@@ -457,6 +459,7 @@ public class Terminal {
     }
 
     private static void addConsultation(Database db, Provider provider) {
+        // TODO: add option to remove service from transaction
         final String consulationMenu =
                 "@Consultation menu : " + provider.getName() + "\n" +
                 "(1) List available services\n" +
