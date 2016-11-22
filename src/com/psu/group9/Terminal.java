@@ -30,24 +30,25 @@ public class Terminal {
         final String prompt = "Enter option: ";
         int tmMax = 4;
         int tmMin = 1;
-        int userOption = 0;
+        String userOption = "0";
 
         //Kick off main menu
-        while (userOption != 4){
+        /*TODO: Maybe add new Integer(int).toString(tmMax) for all menus? -- Time intensive method calls*/
+        while (userOption != "4"){
             System.out.print(terminalMenu);
-            userOption = getInt(prompt,tmMin, tmMax);
+            userOption = getString(prompt,0, 3);
 
             switch(userOption) {
-                case 1: System.out.println("Entering Manager Terminal...." + '\n');
+                case "1": System.out.println("Entering Manager Terminal...." + '\n');
                         managerTerminal(db);
                         break;
-                case 2: System.out.println("Entering Operator Terminal:" + '\n');
+                case "2": System.out.println("Entering Operator Terminal:" + '\n');
                         operatorTerminal(db);
                         break;
-                case 3: System.out.println("Entering Provider Terminal:" + '\n');
+                case "3": System.out.println("Entering Provider Terminal:" + '\n');
                         providerTerminal(db);
                         break;
-                case 4: System.out.println("Thank you for using CA!");
+                case "4": System.out.println("Thank you for using CA!");
                         break;
                 default:
                         System.out.println("Invalid selection, please try again...");
@@ -332,7 +333,7 @@ public class Terminal {
 
     }
     /**
-     * Creates a provider without ID
+     * Creates a provider without ID or status
      *
      * @return Provider object without ID
      */
@@ -349,12 +350,14 @@ public class Terminal {
             String state = getString("Please enter the providers state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the providers zip (5 digits): ", 5, 5);
-            boolean status = getConfirmation("Is provider status active? ");
+
+            /*TODO: Validate update with new db merge*/
+            //boolean status = getConfirmation("Is provider status active? ");
 
 
-            //Try creating new provider
+            //Try creating new provider - ID is assigned by db, and status is assumed to be active
             try {
-                provider = new Provider(0, name, address, city, state, zip, status);
+                provider = new Provider(0, name, address, city, state, zip, true);
                 valid = true;
             } catch (InputException e) {
                 //Prompt exception, force valid input
@@ -386,15 +389,17 @@ public class Terminal {
             String state = getString("Please enter the patients state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the patients zip (5 digits): ", 5, 5);
-            boolean status = getConfirmation("Is patient status active? ");
+
+            //boolean status = getConfirmation("Is patient status active? ");
             //financial standing is only handled by Acme
-            boolean financialStanding = true;
+            //boolean financialStanding = true;
             // Removed below b/c this is only done by acme!
             // boolean financialStanding = getConfirmation("Is patient in good financial standing? ");
 
-            //Try creating new patient
+            /*TODO: Validate update with new db merge*/
+            //Try creating new patient - DB handles ID, where financial standing and status are assumed to be true
             try {
-                patient = new Patient(0, name, address, city, state, zip, status, financialStanding);
+                patient = new Patient(0, name, address, city, state, zip, true, true);
                 valid = true;
             } catch (InputException e) {
                 //Prompt exception, force valid input
