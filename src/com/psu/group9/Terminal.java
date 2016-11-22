@@ -123,10 +123,12 @@ public class Terminal {
                         break;
 
                 case 6: //Print EFT Report
+                        eftReport();
                         break;
                 case 7: //Print Summary Report
                         break;
                 case 8: //Print Patient Report
+                        patientReport(db);
                         break;
                 case 9: //Print Provider report
                         break;
@@ -140,6 +142,80 @@ public class Terminal {
 
         System.out.println("Exiting Manager Terminal...\n");
         //return?
+    }
+
+    /**
+     * Inefficiently prints provider and patient reports. Obvi
+     * @param Database with weeks transactions
+     */
+
+    private static void patientReport(Database db)
+    {
+        String today = getDate();
+        System.out.println("Today is: " + today);
+        System.out.println("##### Begining Patient Report ####\n");
+
+        //Look at all patients because some may have been invalidated in past week
+        Vector<Entity> patients = db.getAllPatients();
+
+        for( Entity p : patients){
+
+            //Get week transaction for patient ID
+            int id = p.getIdNumber();
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByPatient(id, today);
+
+            //if patient has transactions for this week, format report to string
+            if(!weekTransactions.isEmpty()){
+                int i = 1;
+
+                String pReport = "Patient Name: "     + p.getName() + "\n"
+                                + "Patient ID: "      + p.getIdNumber() + "\n"
+                                + "Patient Address: " + p.getAddress() + "\n"
+                                + "Patient City: "    + p.getCity() + "\n"
+                                + "Patient State: "   + p.getState() + "\n"
+                                + "Patient Zip:"      + p.getZip() + "\n";
+                for (Transaction t : weekTransactions){
+
+                    pReport += "---Service " + i + "----\n";
+                    //Get service name in a terrible way - prints unresolved if db cannot find it
+                    String serviceName = "Unresolved";
+                    Vector<Service> service = db.getServiceByID(t.getServiceID());
+                    if (!service.isEmpty()){
+                        serviceName = service.elementAt(0).getName();
+                    }
+                    pReport += "Service date: " + t.getServiceDate() + "\n"
+                            + "Provider name: " + t.getProviderID() + "\n"
+                            + "Service name: "  + serviceName + "\n";
+                    //Increment service
+                    i++;
+                }
+                System.out.println(pReport);
+            }
+        }
+
+        /* Test data
+        Vector<Transaction> allTransactions = db.getAllTransactions();
+        for(Transaction t : allTransactions){
+            System.out.println(t);
+        }
+        */
+
+        System.out.println("\n##### Ending Patient Report ####");
+
+    }
+
+    
+
+    private static void eftReport()
+    {
+        String today = getDate();
+        System.out.println("Today is: " + today);
+
+
+
+
+
+
     }
     /**
      * For creating a Service object with name and fee fields
@@ -698,5 +774,13 @@ public class Terminal {
         }
 
         return confirmation;
+    }
+
+    //Returns today in MM-dd-yyy format
+    private static String getDate()
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+        Date date = new Date();
+        return sdf.format(date);
     }
 }
