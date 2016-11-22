@@ -621,7 +621,7 @@ public class Database {
 
         return transactionNum - 1;
     }
-
+ 
     public int addConsultation(Vector<Transaction> consultation){
         try {
             // We need to ensure that the Provider, Patient, and Service IDs
@@ -1432,7 +1432,7 @@ public class Database {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 1");
+            rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 1 ORDER BY Name ASC");
 
             while(rs.next()) {
                 returnVec.add( new Service(
