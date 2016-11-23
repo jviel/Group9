@@ -31,6 +31,7 @@ public class DBTest {
             addProviders("testdata/providers.csv");
             addServices("testdata/services.csv");
             addTransactions("testdata/transactions.csv");
+            removeAndSuspendPatients();
     }
     
     // Patient Unit Tests
@@ -324,7 +325,6 @@ public class DBTest {
     @Test
     public void B005updateProviderTest2() {
         Vector<Entity> ProviderVec = db.getProvidersByName("Quoelectrics");
-        System.out.println("In B005");
         if(!(ProviderVec.isEmpty())) {
             int ID = ProviderVec.get(0).getIdNumber();
             
@@ -1099,5 +1099,15 @@ public class DBTest {
         }
 
         return;
+    }
+    
+    public void removeAndSuspendPatients() {
+    	for(int i = 100000009; i < 100000014; i++) {
+    	    db.removePatient(i);
+        }
+    
+        for(int i = 100000011; i < 100000016; i++) {
+        	db.suspendPatient(i);
+        }
     }
 }
