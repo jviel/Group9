@@ -23,7 +23,7 @@ import java.util.Vector;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DBTest {
-    Database db = new Database("testDB.db");
+    static Database db = new Database("testDB.db");
     
     @Test
     public void A0000redoDatabase() {
@@ -31,6 +31,7 @@ public class DBTest {
             addProviders("testdata/providers.csv");
             addServices("testdata/services.csv");
             addTransactions("testdata/transactions.csv");
+            removeAndSuspendPatients();
     }
     
     // Patient Unit Tests
@@ -324,7 +325,6 @@ public class DBTest {
     @Test
     public void B005updateProviderTest2() {
         Vector<Entity> ProviderVec = db.getProvidersByName("Quoelectrics");
-        System.out.println("In B005");
         if(!(ProviderVec.isEmpty())) {
             int ID = ProviderVec.get(0).getIdNumber();
             
@@ -882,11 +882,16 @@ public class DBTest {
         // Delete the database if it doesn't already exist.
         Path dbPath = Paths.get("testDB.db");
         try {
-            Files.deleteIfExists(dbPath);
+        	Files.deleteIfExists(dbPath);
         }
         catch(Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    @AfterClass
+    public static void saveDB() {
+    	db.saveDB();
     }
     
     public void addPatients(String filename) {
@@ -1099,5 +1104,15 @@ public class DBTest {
         }
 
         return;
+    }
+    
+    public void removeAndSuspendPatients() {
+    	for(int i = 100000009; i < 100000014; i++) {
+    	    db.removePatient(i);
+        }
+    
+        for(int i = 100000011; i < 100000016; i++) {
+        	db.suspendPatient(i);
+        }
     }
 }
