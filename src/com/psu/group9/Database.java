@@ -535,7 +535,6 @@ public class Database {
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
-        System.out.println(provider.getName());
         try {
             if(!entryExists("Providers", ID)){
                 return false;
@@ -1428,7 +1427,7 @@ public class Database {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 1");
+            rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 1 ORDER BY Name ASC");
 
             while(rs.next()) {
                 returnVec.add( new Service(
