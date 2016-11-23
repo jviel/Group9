@@ -1,11 +1,11 @@
 package com.psu.group9;
 
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Scanner;
 import java.util.Vector;
-
 
 /**
  * Created by andykeene on 11/10/16.
@@ -228,14 +228,15 @@ public class Terminal {
         for( Entity p : providers){
 
             //Get week transaction for patient ID
-            int id = p.getIdNumber();
-            Vector<Transaction> weekTransactions = db.getWeekTransactionsByPatient(id, today);
+            int id = p.getIdNumber();                                     /*TODO: Verify mthd call change from patient to provider is correct*/
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
 
             //if patient has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
-                float feeTotal = 0;                                 //Total transaction fees
-                int serviceCount = 1;                               //Service # for printing
-                Set<Integer> consultations = new HashSet();         //Track unique consultation #'s
+                float feeTotal = 0;                                         //Total transaction fees
+                int serviceCount = 1;                                       //Service # for printing
+                Set<Integer> consultations = new HashSet<>();               //Track unique consultation #'s
+                NumberFormat fmt = NumberFormat.getCurrencyInstance();      //For formatting currency
 
                 String pReport = "Provider Name: "     + p.getName() +     "\n"
                                 + "Provider ID: "      + p.getIdNumber() + "\n"
@@ -255,12 +256,12 @@ public class Terminal {
                     }
 
                     //Prerequisite 2: Get service fee as String - prints as "Unresolved" if not found by db
-                    float serviceFee = -1f;
+                    String serviceFeeString = "Unresolved";
                     Vector<Service> service = db.getServiceByID(t.getServiceID());
                     if (!service.isEmpty()){
-                        serviceFee = service.elementAt(0).getFee();
-                        feeTotal += serviceFee;
-
+                        float serviceFee = service.elementAt(0).getFee();
+                        feeTotal += serviceFee;                                             //Save fee to total
+                        serviceFeeString = fmt.format(serviceFee);                          //Save fee as string
                     }
 
                     //Add report information
@@ -269,18 +270,18 @@ public class Terminal {
                             + "Patient Name: "    + patientName                + "\n"
                             + "Patient ID: "      + t.getPatientID()           + "\n"
                             + "Service ID: "      + t.getServiceID()           + "\n"
-                            + "Fee: "             + Float.toString(serviceFee) + "\n";       /*TODO: Should I clean this up?*/
+                            + "Fee: "             + serviceFeeString           + "\n";       /*TODO: Should I clean this up?*/
 
                     serviceCount++;                                                        //Increment service count
-                    consultations.add(new Integer(t.getConsultationNumber()));             //Add consultation ID to set
+                    consultations.add(t.getConsultationNumber());                          //Add consultation ID - Autoboxed
+                    // consultations.add(new Integer(t.getConsultationNumber()));             //Add consultation ID to set
                 }
 
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
-                        +  "*Total Fee Owed: " + feeTotal + "\n\n";
+                        +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                              //Report prints here
             }
         }
-
         System.out.println("\n##### Ending Provider Report ####");
     }
 
@@ -436,8 +437,8 @@ public class Terminal {
                         }
                         break;
                 case 8: //Update provider
-                        int updateProviderId = getInt("Please enter the ID of the patient to update: ", 0, 999999999);
-                        Vector<Entity> providerVec = db.getPatientByID(updateProviderId);
+                        int updateProviderId = getInt("Please enter the ID of the provider to update: ", 0, 999999999);
+                        Vector<Entity> providerVec = db.getProviderByID(updateProviderId);
 
                         //If the patient exists, we update - prompt user accordingly
                         if(providerVec.size() != 0) {
@@ -474,7 +475,7 @@ public class Terminal {
                         if(db.reinstateProvider(reinstateProviderId)){
                            System.out.println("Reinstated provider " + reinstateProviderId +"\n");
                         } else {
-                           System.out.println("Failed to reinstate provider" + reinstateProviderId + "\n");
+                           System.out.println("Failed to reinstate provider " + reinstateProviderId + "\n");
                         }
                         break;
                 case 11: //quit
@@ -543,12 +544,6 @@ public class Terminal {
             String state = getString("Please enter the patients state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the patients zip (5 digits): ", 5, 5);
-
-            //boolean status = getConfirmation("Is patient status active? ");
-            //financial standing is only handled by Acme
-            //boolean financialStanding = true;
-            // Removed below b/c this is only done by acme!
-            // boolean financialStanding = getConfirmation("Is patient in good financial standing? ");
 
             /*TODO: Validate update with new db merge*/
             //Try creating new patient - DB handles ID, where financial standing and status are assumed to be true
