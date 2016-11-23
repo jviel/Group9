@@ -128,6 +128,7 @@ public class Terminal {
                         eftReport(db);
                         break;
                 case 7: //Print Summary Report
+                        summaryReport(db);
                         break;
                 case 8: //Print Patient Report
                         patientReport(db);
@@ -144,7 +145,6 @@ public class Terminal {
         }
 
         System.out.println("Exiting Manager Terminal...\n");
-        //return?
     }
 
     /**
@@ -228,8 +228,9 @@ public class Terminal {
         for( Entity p : providers){
 
             //Get week transaction for provider ID
-            int id = p.getIdNumber();                                     /*TODO: Verify mthd call change from patient to provider is correct*/
+            int id = p.getIdNumber();
             Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
+             /*TODO: Verify mthd call change from patient to provider is correct*/
 
             //if patient has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
@@ -279,6 +280,7 @@ public class Terminal {
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
                         +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                              //Report prints here
+                /* TODO: Verify this print is in the correct place....?*/
             }
         }
         System.out.println("\n##### Ending Provider Report ####");
@@ -304,14 +306,15 @@ public class Terminal {
         Vector<Entity> providers = db.getAllProviders();
 
         for(Entity p : providers){
+
             //Get week transaction for provider ID
             int id = p.getIdNumber();
             Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
             //if provider has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
 
-                float feeTotal = 0;                                             //Total transaction fees
-                NumberFormat fmt = NumberFormat.getCurrencyInstance();          //For formatting currency
+                float feeTotal = 0;                                                 //Total transaction fees
+                NumberFormat fmt = NumberFormat.getCurrencyInstance();              //For formatting currency
                 String pReport =  "Provider Name: "     + p.getName()     +     "\n"
                                 + "Provider ID: "       + p.getIdNumber() +     "\n";
 
@@ -319,15 +322,81 @@ public class Terminal {
                     //Prerequisite: Look up service fee from service ID
                     Vector<Service> service = db.getServiceByID(t.getServiceID());
                     if (!service.isEmpty()){
-                        feeTotal += service.elementAt(0).getFee();               //Save fee from service provided to total
+                        feeTotal += service.elementAt(0).getFee();                  //Add service fee to total
                     }
                 }
                 pReport +=  "Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
-                System.out.println(pReport);                                                //Report prints here
+                System.out.println(pReport);                                        //Report prints here
             }
         }
         System.out.println("\n##### Ending EFT Report ####");
     }
+
+    /**
+     *
+     * The summary report lists every provider to be paid that week, the number of consultations each had,
+     * and his or her total fee for that week. Finally the total number of providers who provided services,
+     * the total number of consultations, and the overall fee total are printed.
+     *
+     * @param Database that contains weeks transaction data
+     */
+    private static void summaryReport(Database db)
+    {
+        String today = getDate();
+        NumberFormat fmt = NumberFormat.getCurrencyInstance();              //For formatting currency
+        int weeksTotalProviders = 0;                                        //Provider count
+        float weeksTotalFee = 0;                                            //Fee total
+        Set<Integer> weeksTotalConsultation = new HashSet<>();              //Unique consultation count
+
+        System.out.println("Today is: " + today);
+        System.out.println("##### Beginning EFT Report ####\n");
+        /*TODO: REMOVE THIS TEST*/
+        today = getString("Please enter a date: ", 0, 15);
+
+        //Look at all providers because some may have been invalidated in past week
+        Vector<Entity> providers = db.getAllProviders();
+
+        for(Entity p : providers){
+
+            //Get weeks transactions for provider ID
+            int id = p.getIdNumber();
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
+
+            //if provider has transactions for this week, format report to string
+            if(!weekTransactions.isEmpty()){
+
+                Set<Integer> consultationCount = new HashSet<>();                   //Providers unique consultations
+                float feeTotal = 0;                                                 //Providers total fees
+
+                String pReport =  "Provider Name: "     + p.getName()     +     "\n"
+                                + "Provider ID: "       + p.getIdNumber() +     "\n";
+
+                for (Transaction t : weekTransactions){
+                    //Prerequisite: Look up service fee from service ID
+                    Vector<Service> service = db.getServiceByID(t.getServiceID());
+                    if (!service.isEmpty()){
+                        feeTotal += service.elementAt(0).getFee();                  //Add service fee to total
+                    }
+
+                    weeksTotalConsultation.add(t.getConsultationNumber());          //Add to week total
+                    consultationCount.add(t.getConsultationNumber());               //Add to provider total
+                }
+
+                weeksTotalProviders++;                                              //Increment total counts
+                weeksTotalFee += feeTotal;
+                pReport +=  "Total Fee Owed: "              + fmt.format(feeTotal)     + "\n"
+                        +   "Total Unique Consultations: "  + consultationCount.size() + "\n";
+                System.out.println(pReport);                                        //Report prints here
+            }
+        }
+
+        //Summary report totals
+        System.out.println("\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
+                           "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
+                           "\nWeeks Total Number of Active Providers: " + weeksTotalProviders);
+        System.out.println("\n##### Ending EFT Report ####");
+    }
+
     /**
      * For creating a Service object with name and fee fields
      *
