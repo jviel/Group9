@@ -23,7 +23,7 @@ import java.util.Vector;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DBTest {
-    Database db = new Database("testDB.db");
+    static Database db = new Database("testDB.db");
     
     @Test
     public void A0000redoDatabase() {
@@ -882,11 +882,16 @@ public class DBTest {
         // Delete the database if it doesn't already exist.
         Path dbPath = Paths.get("testDB.db");
         try {
-            Files.deleteIfExists(dbPath);
+        	Files.deleteIfExists(dbPath);
         }
         catch(Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    @AfterClass
+    public static void saveDB() {
+    	db.saveDB();
     }
     
     public void addPatients(String filename) {

@@ -6,6 +6,7 @@ import java.util.Vector;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.io.File;
 
 public class Database {
     private int     patientNum;
@@ -14,15 +15,26 @@ public class Database {
     private int     providerNum;
     private int     consultNum;
     private Connection conn = null;
+    private String fileName;
 
     //Constructor
     public Database(String dbName) {
-        dbName = "jdbc:sqlite:" + dbName;
+    	fileName = dbName;
+        File dbFile = new File(dbName);
+        dbName = "jdbc:sqlite::memory:";
 
         //Try to make connection with the database
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(dbName);        
+            conn = DriverManager.getConnection(dbName);
+            
+            if(fileName.equals("testDB.db")) {
+            	System.out.println("We got a test db here, so we won't be loading from memory.");
+            }
+            
+            if(dbFile.exists() && !(fileName.equals("testDB.db"))) {
+                loadFile(dbFile);
+            }
         } 
         catch (ClassNotFoundException | SQLException e) {
             System.err.println("Connection with the database failed.");
@@ -34,6 +46,23 @@ public class Database {
         checkDatabase();
     }
 
+    private void loadFile(File dbFile) throws SQLException {
+    	System.out.println("In loadFile");
+    	Statement stmt = conn.createStatement();
+    	stmt.executeUpdate("restore from " + dbFile.getPath());
+    }
+    
+    public void saveDB() {
+    	try {
+    	    Statement stmt = conn.createStatement();
+    	    stmt.executeUpdate("backup to " + fileName);
+    	    stmt.close();
+    	}
+    	catch(SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
     /*----Checks the database and creates tables during the first run---*/
     private void checkDatabase(){
         try {
