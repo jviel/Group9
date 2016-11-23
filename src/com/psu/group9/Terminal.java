@@ -227,7 +227,7 @@ public class Terminal {
 
         for( Entity p : providers){
 
-            //Get week transaction for patient ID
+            //Get week transaction for provider ID
             int id = p.getIdNumber();                                     /*TODO: Verify mthd call change from patient to provider is correct*/
             Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
 
@@ -274,7 +274,6 @@ public class Terminal {
 
                     serviceCount++;                                                        //Increment service count
                     consultations.add(t.getConsultationNumber());                          //Add consultation ID - Autoboxed
-                    // consultations.add(new Integer(t.getConsultationNumber()));             //Add consultation ID to set
                 }
 
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
@@ -287,7 +286,9 @@ public class Terminal {
 
 
     /**
-     * Not sure what this one needs to do - just print data for now
+     * Prints EFT report which is a list of: Provider Name, Provider ID, Total fee owed
+     * for the specified weeks transactions
+     *
      * @param Database that contains transactional data
      */
 
@@ -295,13 +296,37 @@ public class Terminal {
     {
         String today = getDate();
         System.out.println("Today is: " + today);
+        System.out.println("##### Beginning EFT Report ####\n");
+        /*TODO: REMOVE THIS TEST*/
+        today = getString("Please enter a date: ", 0, 15);
 
-        // Test data
-        Vector<Transaction> allTransactions = db.getAllTransactions();
-        for(Transaction t : allTransactions){
-            System.out.println(t);
+        //Look at all providers because some may have been invalidated in past week
+        Vector<Entity> providers = db.getAllProviders();
+
+        for(Entity p : providers){
+            //Get week transaction for provider ID
+            int id = p.getIdNumber();
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
+            //if provider has transactions for this week, format report to string
+            if(!weekTransactions.isEmpty()){
+
+                float feeTotal = 0;                                             //Total transaction fees
+                NumberFormat fmt = NumberFormat.getCurrencyInstance();          //For formatting currency
+                String pReport =  "Provider Name: "     + p.getName()     +     "\n"
+                                + "Provider ID: "       + p.getIdNumber() +     "\n";
+
+                for (Transaction t : weekTransactions){
+                    //Prerequisite: Look up service fee from service ID
+                    Vector<Service> service = db.getServiceByID(t.getServiceID());
+                    if (!service.isEmpty()){
+                        feeTotal += service.elementAt(0).getFee();               //Save fee from service provided to total
+                    }
+                }
+                pReport +=  "Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
+                System.out.println(pReport);                                                //Report prints here
+            }
         }
-
+        System.out.println("\n##### Ending EFT Report ####");
     }
     /**
      * For creating a Service object with name and fee fields
