@@ -1,12 +1,12 @@
 package com.psu.group9;
 
+import java.text.NumberFormat;
 import com.sun.tools.javac.util.Pair;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Scanner;
 import java.util.Vector;
-
 
 /**
  * Created by andykeene on 11/10/16.
@@ -129,6 +129,7 @@ public class Terminal {
                         eftReport(db);
                         break;
                 case 7: //Print Summary Report
+                        summaryReport(db);
                         break;
                 case 8: //Print Patient Report
                         patientReport(db);
@@ -145,7 +146,6 @@ public class Terminal {
         }
 
         System.out.println("Exiting Manager Terminal...\n");
-        //return?
     }
 
     /**
@@ -228,15 +228,17 @@ public class Terminal {
 
         for( Entity p : providers){
 
-            //Get week transaction for patient ID
+            //Get week transaction for provider ID
             int id = p.getIdNumber();
-            Vector<Transaction> weekTransactions = db.getWeekTransactionsByPatient(id, today);
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
+             /*TODO: Verify mthd call change from patient to provider is correct*/
 
             //if patient has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
-                float feeTotal = 0;                                 //Total transaction fees
-                int serviceCount = 1;                               //Service # for printing
-                Set<Integer> consultations = new HashSet();         //Track unique consultation #'s
+                float feeTotal = 0;                                         //Total transaction fees
+                int serviceCount = 1;                                       //Service # for printing
+                Set<Integer> consultations = new HashSet<>();               //Track unique consultation #'s
+                NumberFormat fmt = NumberFormat.getCurrencyInstance();      //For formatting currency
 
                 String pReport = "Provider Name: "     + p.getName() +     "\n"
                                 + "Provider ID: "      + p.getIdNumber() + "\n"
@@ -256,12 +258,12 @@ public class Terminal {
                     }
 
                     //Prerequisite 2: Get service fee as String - prints as "Unresolved" if not found by db
-                    float serviceFee = -1f;
+                    String serviceFeeString = "Unresolved";
                     Vector<Service> service = db.getServiceByID(t.getServiceID());
                     if (!service.isEmpty()){
-                        serviceFee = service.elementAt(0).getFee();
-                        feeTotal += serviceFee;
-
+                        float serviceFee = service.elementAt(0).getFee();
+                        feeTotal += serviceFee;                                             //Save fee to total
+                        serviceFeeString = fmt.format(serviceFee);                          //Save fee as string
                     }
 
                     //Add report information
@@ -270,24 +272,26 @@ public class Terminal {
                             + "Patient Name: "    + patientName                + "\n"
                             + "Patient ID: "      + t.getPatientID()           + "\n"
                             + "Service ID: "      + t.getServiceID()           + "\n"
-                            + "Fee: "             + Float.toString(serviceFee) + "\n";       /*TODO: Should I clean this up?*/
+                            + "Fee: "             + serviceFeeString           + "\n";       /*TODO: Should I clean this up?*/
 
                     serviceCount++;                                                        //Increment service count
-                    consultations.add(new Integer(t.getConsultationNumber()));             //Add consultation ID to set
+                    consultations.add(t.getConsultationNumber());                          //Add consultation ID - Autoboxed
                 }
 
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
-                        +  "*Total Fee Owed: " + feeTotal + "\n\n";
+                        +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                              //Report prints here
+                /* TODO: Verify this print is in the correct place....?*/
             }
         }
-
         System.out.println("\n##### Ending Provider Report ####");
     }
 
 
     /**
-     * Not sure what this one needs to do - just print data for now
+     * Prints EFT report which is a list of: Provider Name, Provider ID, Total fee owed
+     * for the specified weeks transactions
+     *
      * @param Database that contains transactional data
      */
 
@@ -295,14 +299,105 @@ public class Terminal {
     {
         String today = getDate();
         System.out.println("Today is: " + today);
+        System.out.println("##### Beginning EFT Report ####\n");
+        /*TODO: REMOVE THIS TEST*/
+        today = getString("Please enter a date: ", 0, 15);
 
-        // Test data
-        Vector<Transaction> allTransactions = db.getAllTransactions();
-        for(Transaction t : allTransactions){
-            System.out.println(t);
+        //Look at all providers because some may have been invalidated in past week
+        Vector<Entity> providers = db.getAllProviders();
+
+        for(Entity p : providers){
+
+            //Get week transaction for provider ID
+            int id = p.getIdNumber();
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
+            //if provider has transactions for this week, format report to string
+            if(!weekTransactions.isEmpty()){
+
+                float feeTotal = 0;                                                 //Total transaction fees
+                NumberFormat fmt = NumberFormat.getCurrencyInstance();              //For formatting currency
+                String pReport =  "Provider Name: "     + p.getName()     +     "\n"
+                                + "Provider ID: "       + p.getIdNumber() +     "\n";
+
+                for (Transaction t : weekTransactions){
+                    //Prerequisite: Look up service fee from service ID
+                    Vector<Service> service = db.getServiceByID(t.getServiceID());
+                    if (!service.isEmpty()){
+                        feeTotal += service.elementAt(0).getFee();                  //Add service fee to total
+                    }
+                }
+                pReport +=  "Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
+                System.out.println(pReport);                                        //Report prints here
+            }
+        }
+        System.out.println("\n##### Ending EFT Report ####");
+    }
+
+    /**
+     *
+     * The summary report lists every provider to be paid that week, the number of consultations each had,
+     * and his or her total fee for that week. Finally the total number of providers who provided services,
+     * the total number of consultations, and the overall fee total are printed.
+     *
+     * @param Database that contains weeks transaction data
+     */
+    private static void summaryReport(Database db)
+    {
+        String today = getDate();
+        NumberFormat fmt = NumberFormat.getCurrencyInstance();              //For formatting currency
+        int weeksTotalProviders = 0;                                        //Provider count
+        float weeksTotalFee = 0;                                            //Fee total
+        Set<Integer> weeksTotalConsultation = new HashSet<>();              //Unique consultation count
+
+        System.out.println("Today is: " + today);
+        System.out.println("##### Beginning EFT Report ####\n");
+        /*TODO: REMOVE THIS TEST*/
+        today = getString("Please enter a date: ", 0, 15);
+
+        //Look at all providers because some may have been invalidated in past week
+        Vector<Entity> providers = db.getAllProviders();
+
+        for(Entity p : providers){
+
+            //Get weeks transactions for provider ID
+            int id = p.getIdNumber();
+            Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
+
+            //if provider has transactions for this week, format report to string
+            if(!weekTransactions.isEmpty()){
+
+                Set<Integer> consultationCount = new HashSet<>();                   //Providers unique consultations
+                float feeTotal = 0;                                                 //Providers total fees
+
+                String pReport =  "Provider Name: "     + p.getName()     +     "\n"
+                                + "Provider ID: "       + p.getIdNumber() +     "\n";
+
+                for (Transaction t : weekTransactions){
+                    //Prerequisite: Look up service fee from service ID
+                    Vector<Service> service = db.getServiceByID(t.getServiceID());
+                    if (!service.isEmpty()){
+                        feeTotal += service.elementAt(0).getFee();                  //Add service fee to total
+                    }
+
+                    weeksTotalConsultation.add(t.getConsultationNumber());          //Add to week total
+                    consultationCount.add(t.getConsultationNumber());               //Add to provider total
+                }
+
+                weeksTotalProviders++;                                              //Increment total counts
+                weeksTotalFee += feeTotal;
+                pReport +=  "Total Fee Owed: "              + fmt.format(feeTotal)     + "\n"
+                        +   "Total Unique Consultations: "  + consultationCount.size() + "\n";
+                System.out.println(pReport);                                        //Report prints here
+            }
         }
 
+        //Summary report totals
+        System.out.println("\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
+                           "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
+                           "\nWeeks Total Number of Active Providers: " + weeksTotalProviders);
+        System.out.println("\n##### Ending EFT Report ####");
     }
+
     /**
      * For creating a Service object with name and fee fields
      *
@@ -437,8 +532,8 @@ public class Terminal {
                         }
                         break;
                 case 8: //Update provider
-                        int updateProviderId = getInt("Please enter the ID of the patient to update: ", 0, 999999999);
-                        Vector<Entity> providerVec = db.getPatientByID(updateProviderId);
+                        int updateProviderId = getInt("Please enter the ID of the provider to update: ", 0, 999999999);
+                        Vector<Entity> providerVec = db.getProviderByID(updateProviderId);
 
                         //If the patient exists, we update - prompt user accordingly
                         if(providerVec.size() != 0) {
@@ -475,7 +570,7 @@ public class Terminal {
                         if(db.reinstateProvider(reinstateProviderId)){
                            System.out.println("Reinstated provider " + reinstateProviderId +"\n");
                         } else {
-                           System.out.println("Failed to reinstate provider" + reinstateProviderId + "\n");
+                           System.out.println("Failed to reinstate provider " + reinstateProviderId + "\n");
                         }
                         break;
                 case 11: //quit
@@ -544,12 +639,6 @@ public class Terminal {
             String state = getString("Please enter the patients state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the patients zip (5 digits): ", 5, 5);
-
-            //boolean status = getConfirmation("Is patient status active? ");
-            //financial standing is only handled by Acme
-            //boolean financialStanding = true;
-            // Removed below b/c this is only done by acme!
-            // boolean financialStanding = getConfirmation("Is patient in good financial standing? ");
 
             /*TODO: Validate update with new db merge*/
             //Try creating new patient - DB handles ID, where financial standing and status are assumed to be true
