@@ -155,8 +155,9 @@ public class TestService {
     @Test
     public void testToStringActive() {
         try {
-            Service service = new Service(1, "Massage", 60.85f, 1);
-            String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Active";
+            Service service = new Service(100000, "Massage", 60.85f, 1);
+            // String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Active";
+            String expectedResult = "100000    Massage                 $60.85      Active";
             String actualResult = service.toString();
             assertEquals(expectedResult, actualResult);
         } catch (InputException e) {
@@ -167,8 +168,9 @@ public class TestService {
     @Test
     public void testToStringInactive() {
         try {
-            Service service = new Service(1, "Massage", 60.85f, 0);
-            String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Inactive";
+            Service service = new Service(100000, "Massage", 60.85f, 0);
+            // String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Inactive";
+            String expectedResult = "100000    Massage                 $60.85      Inactive";
             String actualResult = service.toString();
             assertEquals(expectedResult, actualResult);
         } catch (InputException e) {
