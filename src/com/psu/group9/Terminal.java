@@ -436,8 +436,8 @@ public class Terminal {
                         }
                         break;
                 case 8: //Update provider
-                        int updateProviderId = getInt("Please enter the ID of the patient to update: ", 0, 999999999);
-                        Vector<Entity> providerVec = db.getPatientByID(updateProviderId);
+                        int updateProviderId = getInt("Please enter the ID of the provider to update: ", 0, 999999999);
+                        Vector<Entity> providerVec = db.getProviderByID(updateProviderId);
 
                         //If the patient exists, we update - prompt user accordingly
                         if(providerVec.size() != 0) {
