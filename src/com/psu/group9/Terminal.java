@@ -1,5 +1,6 @@
 package com.psu.group9;
 
+import com.sun.tools.javac.util.Pair;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -574,11 +575,12 @@ public class Terminal {
     private static void providerTerminal(Database db){
 
         final String providerMenu =
-                "(1) Start new consultation\n" +
-                "(2) List Provider Directory\n" +
-                "(3) Logout of provider terminal\n";
+                "(1) Check in a patient\n" +
+                "(2) Start new consultation\n" +
+                "(3) List Provider Directory\n" +
+                "(4) Logout of provider terminal\n";
         final String prompt = "Enter option: ";
-        int mmMax = 3;
+        int mmMax = 4;
         int mmMin = 1;
         int option = 0;
 
@@ -599,14 +601,17 @@ public class Terminal {
             option = getInt(prompt, mmMin, mmMax);
 
             switch(option){
-                case 1: // Start consultation
+                case 1: // Check in patient
+                    validatePatient(db);
+                    break;
+                case 2: // Start consultation
                     addConsultation(db, provider);
                     break;
-                case 2: // List services
+                case 3: // List services
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
                     break;
-                case 3: // quit
+                case 4: // quit
                     System.out.println("Logging out of provider terminal\n");
                     option = mmMax;
                     break;
@@ -632,34 +637,19 @@ public class Terminal {
         int mmMax = 5;
 
         String consultDate = "";
-        boolean validPatient = false;
         Patient patient = null;
-        Vector<Transaction> consultation = new Vector<>();
+        Vector<Pair<Transaction, Service>> consultation = new Vector<>();
 
         /* -- Get Patient info -- */
-        do{
-            int id = getInt("Enter patient id: ", 0, 999999999);
-            Vector<Entity> entity = db.getPatientByID(id);
-
-            // check if database returned an entry
-            if (entity.size() > 0 && entity.elementAt(0) instanceof Patient)
-                patient = (Patient)entity.elementAt(0); // cast to patient object
-            else{
-                System.out.println("Patient " + id + " not found");
-                continue;
-            }
-
-            // found patient
-            if (patient.getStatus()) { // Confirm correct patient
-                if(getConfirmation("Validated\nAdd consultation for following patient?\n" + patient + "\n"))
-                    validPatient = true;
-            }
-            else { // patient inactive
-                System.out.println("*** Member Suspended ***\n" + patient + "\n --> Consult ChocAn for details");
-                System.out.println("Canceling consultation\n");
-                return;
-            }
-        } while (!validPatient);
+        patient = validatePatient(db);
+        if (patient == null) {
+            System.out.println("Consultation canceled.\n");
+            return;
+        }
+//        if(!getConfirmation("\nAdd consultation for following patient?\n" + patient + "\n")) {
+//            System.out.println("Consultation canceled.\n");
+//            return;
+//        }
 
         /* -- Enter consultation date -- */
         do{
@@ -682,20 +672,24 @@ public class Terminal {
                     break;
 
                 case 2: // Add Service to consultation
-                    int id = getInt("Enter service ID: ", 0, 999999);
+                    Transaction t = null;
+                    Service s = validateService(db);
+                    if (s == null)
+                        break;
                     String comment = getString("Add optional comment: ", 0, 100);
                     try {
-                        consultation.add(new Transaction(
+                        t = new Transaction(
                                 patient.getIdNumber(),   // patient id
                                 provider.getIdNumber(),  // provider id
-                                id,                      // service id
+                                s.getCode(),             // service id
                                 0,                       // arbitrary consultation id (set by db.addTransaction())
                                 consultDate,             // service date
                                 comment                  // comments
-                        ));
+                        );
                     } catch (InputException ex){
                         System.out.println("Error adding service: " + ex.getMessage());
                     }
+                    consultation.add(new Pair<>(t, s)); // keep track of successful adds
                     break;
 
                 case 3: // View consultation
@@ -706,19 +700,29 @@ public class Terminal {
                     int count = 1;
                     System.out.println("\n\tConsultation " + consultDate + " for patient: " + patient.getName() +
                             " (id: " + patient.getIdNumber() + ")");
-                    for (Transaction t : consultation) {
+                    for (Pair<Transaction, Service> pair : consultation) {
                         System.out.println("\t---------------------------");
                         System.out.println("\tItem " + count++);
-                        System.out.println("\tService ID: " + t.getServiceID());
-                        System.out.println("\tComments: " + t.getComments());
+                        System.out.println("\tService ID:   " + pair.snd.getCode());
+                        System.out.println("\tService name: " + pair.snd.getName());
+                        System.out.println("\tComments:     " + pair.fst.getComments());
                     }
                     break;
 
                 case 4: // Save
                     if (consultation.size() == 0)
                         System.out.println("No services added. Canceling consultation.");
-                    else if (db.addConsultation(consultation) >= 0)
-                        System.out.println("Added Consultation successfully.");
+
+                    // Glob consultation data
+                    float totalFee = 0;
+                    Vector<Transaction> transactions = new Vector<>();
+                    for (Pair<Transaction, Service> pair : consultation) {
+                        transactions.add(pair.fst);
+                        totalFee += pair.snd.getFee();
+                    }
+
+                    if (db.addConsultation(transactions) >= 0)
+                        System.out.println("Added Consultation successfully. Total billed to ChocAn: $" + String.format("%.2f", totalFee));
                     else
                         System.out.println("There was an error adding the consultation to the database");
                     option = mmMax; // break
@@ -877,4 +881,55 @@ public class Terminal {
         Date date = new Date();
         return sdf.format(date);
     }
+
+    private static Patient validatePatient(Database db)
+    {
+        int id = getInt("Enter patient id: ", 0, 999999999);
+        Vector<Entity> entity = db.getPatientByID(id);
+        Patient p;
+
+        if (entity.isEmpty()) {
+            System.out.println("Patient " + id + " not found");
+            return null;
+        }
+
+        p = (Patient)entity.elementAt(0);
+
+        // See if patient is active and not suspended
+        if (!p.getStatus()) {
+            System.out.println("*** Member is no longer active ***\n" + p + "\n --> Consult ChocAn for details");
+            p = null;
+        }
+        else if (!p.getFinancialStanding()) {
+            System.out.println("*** Member Suspended ***\n" + p + "\n --> Consult ChocAn for details");
+            p = null;
+        }
+        else {
+            // is correct patient
+            System.out.println(p);
+            if(getConfirmation("Is this the correct patient?"))
+                System.out.println("*** Validated ***");
+            else
+                p = null;
+        }
+        return p;
+    }
+
+    private static Service validateService(Database db)
+    {
+        int id = getInt("Enter service ID: ", 0, 999999);
+        Vector<Service> v = db.getServiceByID(id);
+        if (v.isEmpty()) {
+            System.out.println("Could not find service");
+            return null;
+        }
+
+        Service s = v.firstElement();
+        System.out.println(s);
+        if(getConfirmation("Is this the correct service?"))
+            return s;
+        else
+            return null;
+    }
+
 }
