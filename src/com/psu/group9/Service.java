@@ -18,7 +18,7 @@ public class Service {
             exceptionString += "Code must be a six-digit integer.\n";
         }
         
-        if (!name.matches("[a-zA-Z]+")) {
+        if (!name.matches("[a-zA-Z ]+")) {
         	exceptionString += "Please enter valid Service name.";
         }
 
