@@ -92,11 +92,8 @@ public class Service {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         NumberFormat fmt = NumberFormat.getCurrencyInstance();
-        return sb.append("Code: ").append(code).append("  ")
-                 .append("Name: ").append(name).append("  ")
-                 .append("Fee: ").append(fmt.format(fee)).append("  ")
-                 .append("Status: ").append((status) ? "Active" : "Inactive")
-                 .toString();
+        String currStatus = (status) ? "Active" : "Inactive";
+        return String.format("%-9d %-23s %-11s %-6s", code, name, fmt.format(fee), currStatus);
     }
 
     // Overrides to help Database Wrapper ----

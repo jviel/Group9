@@ -6,6 +6,7 @@ import java.util.Vector;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
+import java.io.File;
 
 public class Database {
     private int     patientNum;
@@ -14,15 +15,26 @@ public class Database {
     private int     providerNum;
     private int     consultNum;
     private Connection conn = null;
+    private String fileName;
 
     //Constructor
     public Database(String dbName) {
-        dbName = "jdbc:sqlite:" + dbName;
+    	fileName = dbName;
+        File dbFile = new File(dbName);
+        dbName = "jdbc:sqlite::memory:";
 
         //Try to make connection with the database
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(dbName);        
+            conn = DriverManager.getConnection(dbName);
+            
+            if(fileName.equals("testDB.db")) {
+            	System.out.println("We got a test db here, so we won't be loading from memory.");
+            }
+            
+            if(dbFile.exists() && !(fileName.equals("testDB.db"))) {
+                loadFile(dbFile);
+            }
         } 
         catch (ClassNotFoundException | SQLException e) {
             System.err.println("Connection with the database failed.");
@@ -34,6 +46,23 @@ public class Database {
         checkDatabase();
     }
 
+    private void loadFile(File dbFile) throws SQLException {
+    	System.out.println("In loadFile");
+    	Statement stmt = conn.createStatement();
+    	stmt.executeUpdate("restore from " + dbFile.getPath());
+    }
+    
+    public void saveDB() {
+    	try {
+    	    Statement stmt = conn.createStatement();
+    	    stmt.executeUpdate("backup to " + fileName);
+    	    stmt.close();
+    	}
+    	catch(SQLException e) {
+    		System.out.println(e.getMessage());
+    	}
+    }
+    
     /*----Checks the database and creates tables during the first run---*/
     private void checkDatabase(){
         try {
@@ -280,17 +309,14 @@ public class Database {
                 return false;
             }
 
-            stmt = conn.prepareStatement("UPDATE Patients SET Name=?, Address=?, City=?, " +
-                    "State=?, Zipcode=?, FinancialStanding=?, Status=? " +
-                    "WHERE PatientID=?");
+            stmt = conn.prepareStatement("UPDATE Patients SET Name=?, Address=?, City=?" +
+                    ", State=?, Zipcode=? WHERE PatientID=?");
             stmt.setString(1, patient.getName());
             stmt.setString(2, patient.getAddress());
             stmt.setString(3, patient.getCity());
             stmt.setString(4, patient.getState());
             stmt.setString(5, patient.getZip());
-            stmt.setBoolean(6, patient.getFinancialStanding());
-            stmt.setBoolean(7, patient.getStatus());
-            stmt.setInt(8, ID);
+            stmt.setInt(6, ID);
             stmt.executeUpdate();
             stmt.close();
             rs.close();
@@ -539,11 +565,11 @@ public class Database {
         ResultSet rs = null;
 
         try {
-            if(!entryExists("Patients", ID)){
+            if(!entryExists("Providers", ID)){
                 return false;
             }
 
-            // We check to make sure that what the Patient is being updated to isn't already a
+            // We check to make sure that what the Provider is being updated to isn't already a
             // duplicate of something in the DB.
             stmt = conn.prepareStatement("SELECT * FROM Providers WHERE Name=? AND Address=? AND City=? AND State=? " +
                     "AND Zipcode=?");
@@ -554,7 +580,7 @@ public class Database {
             stmt.setString(5, provider.getZip());
             rs = stmt.executeQuery();
 
-            if(rs.next()){
+            while(rs.next()){
                 stmt.close();
                 rs.close();
                 return false;
@@ -562,16 +588,14 @@ public class Database {
 
             //Otherwise update data
             stmt = conn.prepareStatement("UPDATE Providers SET Name=?, Address=?, City=?, " +
-                    "State=?, Zipcode=?, Status=? " +
-                    "WHERE ProviderID=?");
+                    "State=?, Zipcode=? WHERE ProviderID=?");
 
             stmt.setString(1, provider.getName());
             stmt.setString(2, provider.getAddress());
             stmt.setString(3, provider.getCity());
             stmt.setString(4, provider.getState());
             stmt.setString(5, provider.getZip());
-            stmt.setBoolean(6, provider.getStatus());
-            stmt.setInt(7, ID);
+            stmt.setInt(6, ID);
             stmt.executeUpdate();
             stmt.close();
             rs.close();
@@ -1432,7 +1456,7 @@ public class Database {
 
         try {
             stmt = conn.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 1");
+            rs = stmt.executeQuery("SELECT * FROM Services WHERE Status = 1 ORDER BY Name ASC");
 
             while(rs.next()) {
                 returnVec.add( new Service(

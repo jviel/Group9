@@ -23,7 +23,7 @@ import java.util.Vector;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DBTest {
-    Database db = new Database("testDB.db");
+    static Database db = new Database("testDB.db");
     
     @Test
     public void A0000redoDatabase() {
@@ -31,6 +31,7 @@ public class DBTest {
             addProviders("testdata/providers.csv");
             addServices("testdata/services.csv");
             addTransactions("testdata/transactions.csv");
+            removeAndSuspendPatients();
     }
     
     // Patient Unit Tests
@@ -178,7 +179,72 @@ public class DBTest {
             Boolean reinstated = db.reinstatePatient(ID);
             assertFalse(reinstated);
         }
-    
+ // We add a patient, remove them, and attempt to update them to being active. This should not work.
+    @Test
+        public void A013updatePatientTest3() {
+            int ID;
+            Vector<Entity> patientVec;
+            try {
+                Patient newPatient = new Patient(0, "Charlie Day", "Paddy's Pub", "Philadelphia", "PA", "19145", true, true);
+                ID = db.addPatient(newPatient);
+                assertTrue("Charlie Day added", ID > 99999999);
+                
+                Boolean removed = db.removePatient(ID);
+                assertTrue("Charlie Day removed", removed);
+
+                Boolean updated = db.updatePatient(ID, new Patient(0, "Charlie Day", "Paddy's Pub", 
+                                                       "Philadelphia", "PA", "19146", true, true));
+                assertTrue("Charlie Day updated", updated);
+
+                patientVec = db.getPatientByID(ID);
+                assertFalse("Charlie Day's enrollment status", patientVec.get(0).getStatus());
+        }catch(InputException e) {
+            System.out.println(e.getMessage());
+            fail();
+         }}
+
+    // We add a patient, suspend them, and attempt to update them to being active. This should not work.
+    @Test
+        public void A014updatePatientTest4() {
+            int ID;
+            Vector<Entity> patientVec;
+            try {
+                Patient newPatient = new Patient(0, "Charlie Bucket", "Too Many Beds", "New York", "NY", "10001", true, true);
+                ID = db.addPatient(newPatient);
+                assertTrue("Charlie Bucket added", ID > 99999999);
+                
+                Boolean suspended = db.suspendPatient(ID);
+                assertTrue("Charlie Bucket suspended", suspended);
+
+                Boolean updated = db.updatePatient(ID, new Patient(0, "Charlie Bucket", "Chocolate Factory",
+                                                                   "Cheyenne", "WY", "52001", true, true));
+                assertTrue("Charlie Day updated", updated);
+
+                patientVec = db.getPatientByID(ID);
+                newPatient=(Patient) patientVec.get(0);
+                assertFalse("Charlier Bucket's financial standing", newPatient.getFinancialStanding());
+            }
+            catch(InputException e) {
+               System.out.println(e.getMessage());
+               fail();
+            }
+        }
+
+        
+    // We try to update a Patient whose ID doesn't exist.
+    @Test
+        public void A015updatePatientTest5() {
+            try {
+                Patient newPatient = new Patient(0, "Patrick Swayze", "123 Wolverine Pl", "Calumet", "CO", "81040", true, true);
+                Boolean updated = db.updatePatient(890118123, newPatient);
+                assertFalse(updated);
+            }
+            catch(InputException e) {
+               System.out.println(e.getMessage());
+               fail();
+            }
+        }
+
     
     // Provider Unit Tests
 
@@ -301,7 +367,7 @@ public class DBTest {
     
     // Service Unit Tests
     
-    // Adding a service.
+    // Adding a service.new configuration or ru
     @Test
     public void C001addServiceTest() {
         int ID;    
@@ -816,11 +882,16 @@ public class DBTest {
         // Delete the database if it doesn't already exist.
         Path dbPath = Paths.get("testDB.db");
         try {
-            Files.deleteIfExists(dbPath);
+        	Files.deleteIfExists(dbPath);
         }
         catch(Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    @AfterClass
+    public static void saveDB() {
+    	db.saveDB();
     }
     
     public void addPatients(String filename) {
@@ -1033,5 +1104,15 @@ public class DBTest {
         }
 
         return;
+    }
+    
+    public void removeAndSuspendPatients() {
+    	for(int i = 100000009; i < 100000014; i++) {
+    	    db.removePatient(i);
+        }
+    
+        for(int i = 100000011; i < 100000016; i++) {
+        	db.suspendPatient(i);
+        }
     }
 }
