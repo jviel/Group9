@@ -3,10 +3,10 @@ package com.psu.group9;
 import java.text.NumberFormat;
 
 public class Service {
-    String name;
-    int code;
-    float fee;
-    Boolean status;
+    private String name;
+    private int code;
+    private float fee;
+    private Boolean status;
 
     // ---- Constructors ----
     // makes service for DB Wrapper
