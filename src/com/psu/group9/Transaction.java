@@ -6,14 +6,14 @@ import java.text.SimpleDateFormat;
 
 public class Transaction {
     // variables
-    int idNumber;
-    int patientID;
-    int providerID;
-    int serviceID;
-    int consultationNumber;
-    String dateTime;
-    String serviceDate;
-    String comments;
+    private int idNumber;
+    private int patientID;
+    private int providerID;
+    private int serviceID;
+    private int consultationNumber;
+    private String dateTime;
+    private String serviceDate;
+    private String comments;
 
     // constructors
     public Transaction(int idNumber, int patientID, int providerID, int serviceID,
