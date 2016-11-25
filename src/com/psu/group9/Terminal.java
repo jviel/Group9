@@ -168,14 +168,11 @@ public class Terminal {
      * @param Database with weeks transactions
      */
 
-    /*TODO: Further testing */
     private static void patientReport(Database db)
     {
         String today = getDate();
 
         //System.out.println("Today is: " + today);
-
-
         System.out.println("##### Beginning Patient Report ####\n");
 
         //Look at all patients because some may have been invalidated in past week
@@ -428,7 +425,10 @@ public class Terminal {
                 validInput = true;
             } catch (InputException e) {
                 //Prompt exception, force valid input
-                System.out.println("Invalid input: " + e.getMessage() + "\n please try again..");
+                System.out.println("Invalid input: " + e.getMessage());
+                if(!getConfirmation("Would you like to try again?")){
+                    validInput = true;
+                }
             }
         }
 
@@ -611,11 +611,6 @@ public class Terminal {
             String state = getString("Please enter the providers state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the providers zip (5 digits): ", 5, 5);
-
-            /*TODO: Validate update with new db merge*/
-            //boolean status = getConfirmation("Is provider status active? ");
-
-
             //Try creating new provider - ID is assigned by db, and status is assumed to be active
             try {
                 provider = new Provider(0, name, address, city, state, zip, true);
@@ -650,9 +645,6 @@ public class Terminal {
             String state = getString("Please enter the patients state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the patients zip (5 digits): ", 5, 5);
-
-            /*TODO: Validate update with new db merge*/
-            //Try creating new patient - DB handles ID, where financial standing and status are assumed to be true
             try {
                 patient = new Patient(0, name, address, city, state, zip, true, true);
                 valid = true;
