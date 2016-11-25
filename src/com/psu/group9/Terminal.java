@@ -3,6 +3,7 @@ package com.psu.group9;
 import com.sun.tools.javac.util.*;
 
 
+import java.awt.datatransfer.SystemFlavorMap;
 import java.text.NumberFormat;
 import com.sun.tools.javac.util.Pair;
 import java.text.ParseException;
@@ -79,9 +80,11 @@ public class Terminal {
             option = getInt(prompt, mmMin, mmMax);
 
             switch(option){
-                case 1: //List services
+                case 1: //List services,
                         Vector<Service> services = db.getAllServices();
                         System.out.println("All services");
+                        String headers = getProivderDirectoryHeader();
+                        System.out.println(headers);
                         for (Service s : services){
                             System.out.println(s);
                         }
@@ -705,6 +708,7 @@ public class Terminal {
                     addConsultation(db, provider);
                     break;
                 case 3: // List services
+                    System.out.println(getProivderDirectoryHeader());
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
                     break;
@@ -764,6 +768,7 @@ public class Terminal {
             switch(option)
             {
                 case 1: // List services
+                    System.out.println(getProivderDirectoryHeader());
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
                     break;
@@ -947,6 +952,13 @@ public class Terminal {
             }
         }
         return ret;
+    }
+    /** Return Provider Directory header
+     *  @return
+     */
+    private static String getProivderDirectoryHeader()
+    {
+        return String.format("%-9s %-23s %-11s %-6s", "Code", "Service Name", "Fee", "Status");
     }
 
     /**
