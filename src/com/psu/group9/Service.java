@@ -3,10 +3,10 @@ package com.psu.group9;
 import java.text.NumberFormat;
 
 public class Service {
-    String name;
-    int code;
-    float fee;
-    Boolean status;
+    private String name;
+    private int code;
+    private float fee;
+    private Boolean status;
 
     // ---- Constructors ----
     // makes service for DB Wrapper
@@ -16,6 +16,10 @@ public class Service {
 
         if (code < 0 || code > 999999) {
             exceptionString += "Code must be a six-digit integer.\n";
+        }
+        
+        if (!name.matches("[a-zA-Z ]+")) {
+        	exceptionString += "Please enter valid Service name.";
         }
 
         if (name.length() > 20) {
@@ -45,13 +49,14 @@ public class Service {
     // makes new service -- uses first constructor
     public Service (String name, float fee)
         throws InputException {
-        this(0, name, fee, 1);
+    	this(0, name, fee, 1);
         return;
     }
+    
 
     // ---- Setters and getters ---
     private void setName(String name) {
-        this.name = name;
+    	this.name = name;
     }
 
     private void setCode(int code) {
