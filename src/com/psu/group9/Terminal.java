@@ -33,7 +33,6 @@ public class Terminal {
         int userOption = 0;
 
         //Kick off main menu
-        /*TODO: Maybe add new Integer(int).toString(tmMax) for all menus? -- Time intensive method calls*/
         while (userOption != 4){
             System.out.print(terminalMenu);
             userOption = getInt(prompt, 0, 4);
@@ -72,6 +71,16 @@ public class Terminal {
         int mmMax = 10;
         int mmMin = 1;
         int option = 0;
+        final int managerLoginId = 11235813;
+        int loginAttempt = getInt("Please enter your manager ID: ", 0, 999999999);
+
+        if(loginAttempt != managerLoginId){
+            System.out.println("Login ID is not valid.\n" +
+                               "[Hint: Did you forget the first 7 digits of the Fibonacci sequence (1, ...)?]\n");
+            return;
+        } else {
+            System.out.println("Login ID Authenticated\n");
+        }
 
 
        // System.out.println(managerMenu);
@@ -90,16 +99,18 @@ public class Terminal {
                         }
                         break;
                 case 2: //Add service
-                     /* --- TODO: Add confirmation for service object add? */
+                     /* --- TODO: Add confirmation for service object add? -- essentially already done in getService.. */
                         System.out.println("For the new service");
                         Service service = getService();
-                        int id = db.addService(service);
-                        if (id > 0){
-                            System.out.println("Added: " + service.getName() + "\n" +
-                                               "ID:    " + id + "\n" +
-                                               "fee:   " + service.getFee());
-                        } else if (id < -1) {
-                            System.out.println("Service " + service.getName() + " already exists.");
+                        if(service != null) {                       //verify we were returned a valid object
+                            int id = db.addService(service);
+                            if (id > 0) {
+                                System.out.println("Added: " + service.getName() + "\n" +
+                                        "ID:    " + id + "\n" +
+                                        "fee:   " + service.getFee());
+                            } else if (id < -1) {
+                                System.out.println("Service " + service.getName() + " already exists.");
+                            }
                         }
                         break;
                 case 3: //Update service
@@ -448,6 +459,19 @@ public class Terminal {
         int omMax = 11;
         int omMin = 1;
         int option = 0;
+
+        final int operatorLoginId = 23571113;
+        int loginAttempt = getInt("Please enter your operator ID: ", 0, 999999999);
+
+        if(loginAttempt != operatorLoginId){
+            System.out.println("Login ID is not valid.\n" +
+                    "[Hint: Did you forget the first 5 prime numbers?]\n");
+            return;
+        } else {
+            System.out.println("Login ID Authenticated\n");
+        }
+
+
 
         while (option != omMax ){
             System.out.print(operatorMenu);
@@ -946,7 +970,7 @@ public class Terminal {
         return ret;
     }
     /** Return Provider Directory header
-     *  @return
+     *  @return Directory Formatting Header
      */
     private static String getProivderDirectoryHeader()
     {
