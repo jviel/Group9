@@ -88,7 +88,7 @@ public class Terminal {
                         break;
                 case 2: //Add service
                      /* --- TODO: Add confirmation for service object add? */
-                        System.out.println("Adding service...");
+                        System.out.println("For the new service");
                         Service service = getService();
                         int id = db.addService(service);
                         if (id > 0){
@@ -100,15 +100,24 @@ public class Terminal {
                         }
                         break;
                 case 3: //Update service
-                        /* --- TODO: Add confirmation for service object update? */
+                        /* --- TODO: Add confirmation for service object update? == DONE Below */
                         int updateServiceId = getInt("Please enter the service code: ", 0, 999999);
-                        System.out.println("Please enter the new...");
-                        Service updateService = getService();
-                        if(db.updateService(updateServiceId, updateService)){
-                            System.out.println("Updated service code " + updateServiceId);  // -- NOTE: Needs prettier print
-                        } else {
-                            System.out.println("Service code " + updateServiceId + " did not exist.");
-                        }
+                        Vector<Service> updateServiceById = db.getServiceByID(updateServiceId);
+
+                        if(updateServiceById.isEmpty()){
+                            //service not found
+                            System.out.println(updateServiceId + " does not exist.");
+                        } else if (getConfirmation("\n" + updateServiceById.elementAt(0) + "\nIs this the service you would like to update?")){
+
+                            //Service exists, and is the correct one to update
+                            System.out.println("Please enter the update information for service code "+ updateServiceId + "...");
+                            Service updateService = getService();
+                            if (db.updateService(updateServiceId, updateService)) {
+                                System.out.println("Updated service code " + updateServiceId);  // -- NOTE: Needs prettier print
+                            } else {
+                                System.out.println("Service code " + updateServiceId + " was not updated");
+                            }
+                       }
                         break;
                 case 4: //Delete service
                         /* --- TODO: Add confirmation for service object to delete */
@@ -160,11 +169,9 @@ public class Terminal {
     private static void patientReport(Database db)
     {
         String today = getDate();
-        System.out.println("Today is: " + today);
 
+        //System.out.println("Today is: " + today);
 
-        /*TODO: REMOVE THIS TEST*/
-        //today = getString("Please enter a date: ", 0, 15);
 
         System.out.println("##### Beginning Patient Report ####\n");
 
@@ -223,8 +230,7 @@ public class Terminal {
         String today = getDate();
         System.out.println("Today is: " + today);
         System.out.println("##### Beginning Provider Report ####\n");
-        /*TODO: REMOVE THIS TEST*/
-        today = getString("Please enter a date: ", 0, 15);
+
 
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
@@ -303,8 +309,6 @@ public class Terminal {
         String today = getDate();
         System.out.println("Today is: " + today);
         System.out.println("##### Beginning EFT Report ####\n");
-        /*TODO: REMOVE THIS TEST*/
-        today = getString("Please enter a date: ", 0, 15);
 
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
