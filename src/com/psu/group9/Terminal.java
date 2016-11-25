@@ -104,7 +104,7 @@ public class Terminal {
                         if(db.updateService(updateServiceId, updateService)){
                             System.out.println("Updated service code " + updateServiceId);  // -- NOTE: Needs prettier print
                         } else {
-                            System.out.println("service code " + updateServiceId + " did not exist.");
+                            System.out.println("Service code " + updateServiceId + " did not exist.");
                         }
                         break;
                 case 4: //Delete service
@@ -352,6 +352,7 @@ public class Terminal {
         System.out.println("Today is: " + today);
         System.out.println("##### Beginning EFT Report ####\n");
         /*TODO: REMOVE THIS TEST*/
+
         today = getString("Please enter a date: ", 0, 15);
 
         //Look at all providers because some may have been invalidated in past week
@@ -952,7 +953,7 @@ public class Terminal {
         String ret;
         boolean confirmation = false;
 
-        System.out.print(prompt + " (Yes/No):");
+        System.out.print(prompt + " (Yes/No): ");
         ret = sc.nextLine();
         if (ret.equalsIgnoreCase("yes") || ret.equalsIgnoreCase("y")) {
             confirmation = true;
