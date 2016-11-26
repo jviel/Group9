@@ -701,8 +701,8 @@ public class DBTest {
 
         try {
 
-            Service serv1 = new Service("Test1", 150.00F);
-            Service serv2 = new Service("Test2", 200.00F);
+            Service serv1 = new Service("Muffin", 150.00F);
+            Service serv2 = new Service("Danish", 200.00F);
 
             int ID = db.addService(serv1);
             assertTrue("Successfully added serv1", ID > 99999);
@@ -731,8 +731,8 @@ public class DBTest {
     public void G001addConsultationTest() {
     	Vector<Transaction> transVec = new Vector<Transaction>();
     	try {
-    		transVec.add(new Transaction(100000000, 100000000, 100000, 0, "11-20-2016", "Transaction 1"));
-    		transVec.add(new Transaction(100000000, 100000000, 100001, 0, "11-20-2016", "Transaction 2"));
+    		transVec.add(new Transaction(100000000, 100000000, 100000, 0, "11-20-2016", "Stuff"));
+    		transVec.add(new Transaction(100000000, 100000000, 100001, 0, "11-20-2016", "More Stuff"));
     		
     		int ID = db.addConsultation(transVec);
     		
