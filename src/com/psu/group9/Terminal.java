@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Scanner;
 import java.util.Vector;
+import java.io.*;
 
 /**
  * Created by andykeene on 11/10/16.
@@ -47,8 +48,11 @@ public class Terminal {
                 case 3: System.out.println("Entering Provider Terminal:" + '\n');
                         providerTerminal(db);
                         break;
-                case 4: System.out.println("Thank you for using CA!");
+                case 4: //TODO: Remove test*/
+                        writeToFile("test_report", "data!");
+                        //System.out.println("Thank you for using CA!");
                         break;
+
                 default:
                         System.out.println("Invalid selection, please try again...");
                         break;
@@ -76,14 +80,12 @@ public class Terminal {
 
         if(loginAttempt != managerLoginId){
             System.out.println("Login ID is not valid.\n" +
-                               "[Hint: Did you forget the first 7 digits of the Fibonacci sequence (1, ...)?]\n");
+                               "[Hint: Did you forget the first 7 elements of the Fibonacci sequence (1, 1, ...)?]\n");
             return;
         } else {
             System.out.println("Login ID Authenticated\n");
         }
 
-
-       // System.out.println(managerMenu);
         while (option != 10){
             System.out.println(managerMenu);
             option = getInt(prompt, mmMin, mmMax);
@@ -415,6 +417,49 @@ public class Terminal {
                            "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
                            "\nWeeks Total Number of Active Providers: " + weeksTotalProviders);
         System.out.println("\n##### Ending EFT Report ####");
+    }
+
+    /**
+     * Writes string to file
+     * @return True is successful write, false if else
+     */
+    private static boolean writeToFile(String filename, String data)
+    {
+        boolean ret = false;
+        String appDir = System.getProperty("user.dir");     /*TODO: Try-catch block? for security exception*/
+        File reportDir= new File(appDir + "/reports");     //Report directory is created as appDir/reports
+
+        /* TODO: remove the test printing */
+        if (!reportDir.exists()){                          //If /reports doesn't exist, create it and inform usr
+            if(reportDir.mkdir()){
+                System.out.println("Creating directory " + reportDir + "...");
+            } else {
+                System.out.println("Failed to make " + reportDir + "...");
+            }
+        } else {
+          //  System.out.println("Directory" + reportDir + " already exists..");
+        }
+
+        //open file in reports dir and write!
+        File report = new File(reportDir, filename);
+
+        //open file write util, and write data to filename
+        try {
+            BufferedWriter output = new BufferedWriter(new FileWriter(report));
+            output.write(data);
+            output.close();
+            System.out.println("Successfully wrote report to " + report.getAbsolutePath());
+            ret = true;
+        } catch (IOException e) {
+            System.out.println("Failed to write report to " + report.getAbsolutePath());
+            ret = false;
+        }
+
+
+        //System.out.println("Working Directory = " + System.getProperty("user.dir"));
+
+        //Returns success of file writing
+        return ret;
     }
 
     /**
