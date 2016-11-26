@@ -58,9 +58,13 @@ product:
 \tcp $(JUNITLOC) ExtLibs
 \tcp $(HAMCRESTLOC) ExtLibs
 \t
+\t#Run the JUnit tests, producing the testDB.
+\tsh runTests.sh
+\t#Copy TestDB to database.db.
+\tcp testDB.db database.db
 \t#Create the .zip out of the jar and the external libraries.
 \t
-\tzip -r CA.zip ExtLibs CA.jar
+\tzip -r CA.zip ExtLibs CA.jar database.db
 \t
 \t#Remove the components that we've created along this route.
 \trm CA.jar
