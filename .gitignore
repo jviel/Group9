@@ -192,3 +192,4 @@ hs_err_pid*
 Makefile
 runTerminal.sh
 runTests.sh
+MANIFEST.MF

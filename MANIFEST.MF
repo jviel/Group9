@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: . 
-            ExtLibs/org.hamcrest.core_1.3.0.jar 
-            ExtLibs/sqlite-jdbc-3.15.1.jar
-            ExtLibs/junit.jar
-            ExtLibs/tools.jar
-Main-Class: com.psu.group9.Terminal
