@@ -65,6 +65,8 @@ public class Terminal {
                         break;
             }
         }
+
+        db.saveDB();
     }
 
 
@@ -225,9 +227,15 @@ public class Terminal {
                     if (!service.isEmpty()){
                         serviceName = service.elementAt(0).getName();
                     }
+                    //Prerequisite 2: Get provider name  - prints unresolved if db cannot find it
+                    String providerName = "Unresolved";
+                    Vector<Entity> provider = db.getProviderByID(t.getProviderID());
+                    if(!provider.isEmpty()){
+                        providerName = provider.elementAt(0).getName();
+                    }
 
                     pReport += "Service date: " + t.getServiceDate() + "\n"
-                            + "Provider name: " + t.getProviderID()  + "\n"
+                            + "Provider name: " + providerName       + "\n"
                             + "Service name: "  + serviceName        + "\n";
 
                     serviceCount++;
