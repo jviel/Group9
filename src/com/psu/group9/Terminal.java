@@ -3,6 +3,7 @@ package com.psu.group9;
 import com.sun.tools.javac.util.*;
 
 
+import java.awt.datatransfer.SystemFlavorMap;
 import java.text.NumberFormat;
 import com.sun.tools.javac.util.Pair;
 import java.text.ParseException;
@@ -10,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Scanner;
 import java.util.Vector;
+import java.io.*;
+import java.util.Calendar;
 
 /**
  * Created by andykeene on 11/10/16.
@@ -32,7 +35,6 @@ public class Terminal {
         int userOption = 0;
 
         //Kick off main menu
-        /*TODO: Maybe add new Integer(int).toString(tmMax) for all menus? -- Time intensive method calls*/
         while (userOption != 4){
             System.out.print(terminalMenu);
             userOption = getInt(prompt, 0, 4);
@@ -47,8 +49,17 @@ public class Terminal {
                 case 3: System.out.println("Entering Provider Terminal:" + '\n');
                         providerTerminal(db);
                         break;
-                case 4: System.out.println("Thank you for using CA!");
+                case 4: //TODO: Remove test*/
+
+                        /*Calendar week = Calendar.getInstance();
+                        String date = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+                        week.add(Calendar.WEEK_OF_YEAR, -1);
+                        String lastWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+                        System.out.println("Last week: " + lastWeek + "\nthis week: " + date);*/
+                    //writeToFile("test_report", "data!");
+                        //System.out.println("Thank you for using CA!");
                         break;
+
                 default:
                         System.out.println("Invalid selection, please try again...");
                         break;
@@ -71,44 +82,65 @@ public class Terminal {
         int mmMax = 10;
         int mmMin = 1;
         int option = 0;
+        final int managerLoginId = 11235813;
+        int loginAttempt = getInt("Please enter your manager ID: ", 0, 999999999);
 
+        if(loginAttempt != managerLoginId){
+            System.out.println("Login ID is not valid.\n" +
+                               "[Hint: Did you forget the first 7 elements of the Fibonacci sequence (1, 1, ...)?]\n");
+            return;
+        } else {
+            System.out.println("Login ID Authenticated\n");
+        }
 
-       // System.out.println(managerMenu);
         while (option != 10){
             System.out.println(managerMenu);
             option = getInt(prompt, mmMin, mmMax);
 
             switch(option){
-                case 1: //List services
+                case 1: //List services,
                         Vector<Service> services = db.getAllServices();
                         System.out.println("All services");
+                        String headers = getProivderDirectoryHeader();
+                        System.out.println(headers);
                         for (Service s : services){
                             System.out.println(s);
                         }
                         break;
                 case 2: //Add service
-                     /* --- TODO: Add confirmation for service object add? */
-                        System.out.println("Adding service...");
+                     /* --- TODO: Add confirmation for service object add? -- essentially already done in getService.. */
+                        System.out.println("For the new service");
                         Service service = getService();
-                        int id = db.addService(service);
-                        if (id > 0){
-                            System.out.println("Added: " + service.getName() + "\n" +
-                                               "ID:    " + id + "\n" +
-                                               "fee:   " + service.getFee());
-                        } else if (id < -1) {
-                            System.out.println("Service " + service.getName() + " already exists.");
+                        if(service != null) {                       //verify we were returned a valid object
+                            int id = db.addService(service);
+                            if (id > 0) {
+                                System.out.println("Added: " + service.getName() + "\n" +
+                                        "ID:    " + id + "\n" +
+                                        "fee:   " + service.getFee());
+                            } else if (id < -1) {
+                                System.out.println("Service " + service.getName() + " already exists.");
+                            }
                         }
                         break;
                 case 3: //Update service
-                        /* --- TODO: Add confirmation for service object update? */
+                        /* --- TODO: Add confirmation for service object update? == DONE Below */
                         int updateServiceId = getInt("Please enter the service code: ", 0, 999999);
-                        System.out.println("Please enter the new...");
-                        Service updateService = getService();
-                        if(db.updateService(updateServiceId, updateService)){
-                            System.out.println("Updated service code " + updateServiceId);  // -- NOTE: Needs prettier print
-                        } else {
-                            System.out.println("service code " + updateServiceId + " did not exist.");
-                        }
+                        Vector<Service> updateServiceById = db.getServiceByID(updateServiceId);
+
+                        if(updateServiceById.isEmpty()){
+                            //service not found
+                            System.out.println(updateServiceId + " does not exist.");
+                        } else if (getConfirmation("\n" + updateServiceById.elementAt(0) + "\nIs this the service you would like to update?")){
+
+                            //Service exists, and is the correct one to update
+                            System.out.println("Please enter the update information for service code "+ updateServiceId + "...");
+                            Service updateService = getService();
+                            if (db.updateService(updateServiceId, updateService)) {
+                                System.out.println("Updated service code " + updateServiceId);  // -- NOTE: Needs prettier print
+                            } else {
+                                System.out.println("Service code " + updateServiceId + " was not updated");
+                            }
+                       }
                         break;
                 case 4: //Delete service
                         /* --- TODO: Add confirmation for service object to delete */
@@ -156,17 +188,13 @@ public class Terminal {
      * @param Database with weeks transactions
      */
 
-    /*TODO: Further testing */
     private static void patientReport(Database db)
     {
         String today = getDate();
-        System.out.println("Today is: " + today);
+        StringBuilder reportData = new StringBuilder();
 
 
-        /*TODO: REMOVE THIS TEST*/
-        //today = getString("Please enter a date: ", 0, 15);
-
-        System.out.println("##### Beginning Patient Report ####\n");
+        System.out.println("##### Beginning Patient Report " + getWeekRange() + " ####\n");
 
         //Look at all patients because some may have been invalidated in past week
         Vector<Entity> patients = db.getAllPatients();
@@ -205,10 +233,14 @@ public class Terminal {
                     serviceCount++;
                 }
                 System.out.println(pReport);
+                reportData.append(pReport);                                                     //file data *
             }
         }
 
         System.out.println("\n##### Ending Patient Report ####");
+        //Write to file
+        String reportName = "patientReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
     /**
@@ -221,11 +253,9 @@ public class Terminal {
     private static void providerReport(Database db)
     {
         String today = getDate();
-        System.out.println("Today is: " + today);
-        System.out.println("##### Beginning Provider Report ####\n");
-        /*TODO: REMOVE THIS TEST*/
-        today = getString("Please enter a date: ", 0, 15);
+        StringBuilder reportData = new StringBuilder();
 
+        System.out.println("##### Beginning Provider Report " + getWeekRange() + " ####\n");
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
 
@@ -234,7 +264,6 @@ public class Terminal {
             //Get week transaction for provider ID
             int id = p.getIdNumber();
             Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
-             /*TODO: Verify mthd call change from patient to provider is correct*/
 
             //if patient has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
@@ -284,10 +313,14 @@ public class Terminal {
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
                         +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                              //Report prints here
-                /* TODO: Verify this print is in the correct place....?*/
+                reportData.append(pReport);                                               //file data *
+
             }
         }
         System.out.println("\n##### Ending Provider Report ####");
+        //Write to file
+        String reportName = "providerReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
 
@@ -301,10 +334,9 @@ public class Terminal {
     private static void eftReport(Database db)
     {
         String today = getDate();
-        System.out.println("Today is: " + today);
-        System.out.println("##### Beginning EFT Report ####\n");
-        /*TODO: REMOVE THIS TEST*/
-        today = getString("Please enter a date: ", 0, 15);
+        StringBuilder reportData = new StringBuilder();
+
+        System.out.println("##### Beginning EFT Report " + getWeekRange() + " ####\n");
 
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
@@ -331,9 +363,13 @@ public class Terminal {
                 }
                 pReport +=  "Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                        //Report prints here
+                reportData.append(pReport);                                         //file data *
             }
         }
         System.out.println("\n##### Ending EFT Report ####");
+        //Write to file
+        String reportName = "eftReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
     /**
@@ -351,11 +387,10 @@ public class Terminal {
         int weeksTotalProviders = 0;                                        //Provider count
         float weeksTotalFee = 0;                                            //Fee total
         Set<Integer> weeksTotalConsultation = new HashSet<>();              //Unique consultation count
+        StringBuilder reportData = new StringBuilder();                     //File data! Fast, mutable advantage
 
-        System.out.println("Today is: " + today);
-        System.out.println("##### Beginning EFT Report ####\n");
-        /*TODO: REMOVE THIS TEST*/
-        today = getString("Please enter a date: ", 0, 15);
+        //System.out.println();
+        System.out.println("##### Beginning Summary Report " + getWeekRange() +  " ####\n");
 
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
@@ -390,15 +425,68 @@ public class Terminal {
                 weeksTotalFee += feeTotal;
                 pReport +=  "Total Fee Owed: "              + fmt.format(feeTotal)     + "\n"
                         +   "Total Unique Consultations: "  + consultationCount.size() + "\n";
+                reportData.append(pReport);                                         //file data *
                 System.out.println(pReport);                                        //Report prints here
             }
         }
 
         //Summary report totals
-        System.out.println("\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
-                           "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
-                           "\nWeeks Total Number of Active Providers: " + weeksTotalProviders);
-        System.out.println("\n##### Ending EFT Report ####");
+        String reportSummary = "\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
+                               "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
+                               "\nWeeks Total Number of Active Providers: " + weeksTotalProviders + "\n";
+        System.out.println(reportSummary);
+        reportData.append(reportSummary);                                           //file data *
+        System.out.println("\n##### Ending Summary Report ####");
+
+        //Write to file
+        String reportName = "summaryReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
+    }
+
+    /**
+     * Writes string to file, creates reports directory in application folder path if it
+     * does not exist
+     * @return True is successful write, false if else
+     */
+    private static boolean writeToFile(String filename, String data)
+    {
+        boolean status = true;                                  //Flags successive operations
+        String appDir = "";
+        try{                                                    //unclear on when S.E is thrown, but can occur
+            appDir = System.getProperty("user.dir");            //Get abs. path to app directory
+        } catch (SecurityException se){
+            System.out.println("Security issue: " + se + "\n");
+            status = false;                                     //Status will be used to flag SE for file-write attmpt
+        }
+
+        if (status) {
+
+            File reportDir = new File(appDir + "/reports");     //Report directory is created as appDir/reports
+            if (!reportDir.exists()) {                          //If abs_path/reports doesn't exist, create it and inform usr
+                if (reportDir.mkdir()) {
+                    System.out.println("Creating directory " + reportDir + "...");
+                } else {
+                    System.out.println("Failed to make " + reportDir + "...");
+                }
+            }
+
+            File report = new File(reportDir, filename);        //open file in reports dir and write!
+            try {                                               //open file write util, and write data to filename
+                                                                //logs each step?
+                BufferedWriter output = new BufferedWriter(new FileWriter(report));
+                System.out.println("Creating file " + filename + "...");
+                output.write(data);
+                output.close();
+                System.out.println("Successfully wrote report to " + report.getAbsolutePath());
+                status = true;
+            } catch (IOException e) {
+                System.out.println("Failed to write report to " + report.getAbsolutePath());
+                status = false;
+            }
+        }
+
+        //Status = false iff Sec. Exception or BufferedReader error
+        return status;
     }
 
     /**
@@ -420,7 +508,10 @@ public class Terminal {
                 validInput = true;
             } catch (InputException e) {
                 //Prompt exception, force valid input
-                System.out.println("Invalid input: " + e.getMessage() + "\n please try again..");
+                System.out.println("Invalid input: " + e.getMessage());
+                if(!getConfirmation("Would you like to try again?")){
+                    validInput = true;
+                }
             }
         }
 
@@ -441,10 +532,20 @@ public class Terminal {
         int omMin = 1;
         int option = 0;
 
+        final int operatorLoginId = 23571113;
+        int loginAttempt = getInt("Please enter your operator ID: ", 0, 999999999);
+
+        if(loginAttempt != operatorLoginId){
+            System.out.println("Login ID is not valid.\n" +
+                    "[Hint: Did you forget the first 5 prime numbers?]\n");
+            return;
+        } else {
+            System.out.println("Login ID Authenticated\n");
+        }
+
         while (option != omMax ){
             System.out.print(operatorMenu);
             option = getInt(prompt, omMin, omMax);
-
 
             switch(option) {
 
@@ -603,11 +704,6 @@ public class Terminal {
             String state = getString("Please enter the providers state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the providers zip (5 digits): ", 5, 5);
-
-            /*TODO: Validate update with new db merge*/
-            //boolean status = getConfirmation("Is provider status active? ");
-
-
             //Try creating new provider - ID is assigned by db, and status is assumed to be active
             try {
                 provider = new Provider(0, name, address, city, state, zip, true);
@@ -642,9 +738,6 @@ public class Terminal {
             String state = getString("Please enter the patients state (ex. OR, AZ): ", 2, 2);
             /* TODO: Validate 5-digit zip with regex? */
             String zip = getString("Please enter the patients zip (5 digits): ", 5, 5);
-
-            /*TODO: Validate update with new db merge*/
-            //Try creating new patient - DB handles ID, where financial standing and status are assumed to be true
             try {
                 patient = new Patient(0, name, address, city, state, zip, true, true);
                 valid = true;
@@ -700,6 +793,7 @@ public class Terminal {
                     addConsultation(db, provider);
                     break;
                 case 3: // List services
+                    System.out.println(getProivderDirectoryHeader());
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
                     break;
@@ -738,10 +832,6 @@ public class Terminal {
             System.out.println("Consultation canceled.\n");
             return;
         }
-//        if(!getConfirmation("\nAdd consultation for following patient?\n" + patient + "\n")) {
-//            System.out.println("Consultation canceled.\n");
-//            return;
-//        }
 
         /* -- Enter consultation date -- */
         do{
@@ -759,8 +849,10 @@ public class Terminal {
             switch(option)
             {
                 case 1: // List services
+                    System.out.println(getProivderDirectoryHeader());
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
+                    System.out.println();
                     break;
 
                 case 2: // Add Service to consultation
@@ -943,6 +1035,13 @@ public class Terminal {
         }
         return ret;
     }
+    /** Return Provider Directory header
+     *  @return Directory Formatting Header
+     */
+    private static String getProivderDirectoryHeader()
+    {
+        return String.format("%-9s %-23s %-11s %-6s", "Code", "Service Name", "Fee", "Status");
+    }
 
     /**
      * For getting user confirmation. Prompt + (Yes/No): is displayed, and user response is returned
@@ -955,7 +1054,7 @@ public class Terminal {
         String ret;
         boolean confirmation = false;
 
-        System.out.print(prompt + " (Yes/No):");
+        System.out.print(prompt + " (Yes/No): ");
         ret = sc.nextLine();
         if (ret.equalsIgnoreCase("yes") || ret.equalsIgnoreCase("y")) {
             confirmation = true;
@@ -972,6 +1071,18 @@ public class Terminal {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
         Date date = new Date();
         return sdf.format(date);
+    }
+
+    //Returns range of last week through this week in format of "MM-dd-yyyy_to_MM-dd-yyyy"
+    private static String getWeekRange()
+    {
+        Calendar week = Calendar.getInstance();
+        String thisWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+        week.add(Calendar.WEEK_OF_YEAR, -1);
+        String lastWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+        //System.out.println("Last week: " + lastWeek + "\nthis week: " + date);
+
+        return lastWeek + "_to_" + thisWeek;
     }
 
     private static Patient validatePatient(Database db)
@@ -1007,8 +1118,7 @@ public class Terminal {
         return p;
     }
 
-    private static Service validateService(Database db)
-    {
+    private static Service validateService(Database db) {
         int id = getInt("Enter service ID: ", 0, 999999);
         Vector<Service> v = db.getServiceByID(id);
         if (v.isEmpty()) {
@@ -1018,7 +1128,11 @@ public class Terminal {
 
         Service s = v.firstElement();
         System.out.println(s);
-        if(getConfirmation("Is this the correct service?"))
+        if (!s.getStatus()) {
+            System.out.println("Service is no longer billable.");
+            return null;
+        }
+        else if(getConfirmation("Is this the correct service?"))
             return s;
         else
             return null;
