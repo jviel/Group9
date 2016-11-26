@@ -1,3 +1,5 @@
+import re
+
 OS = input("What OS do you have? (Unix or Windows) ")
 
 if OS == "U" or OS == "Unix" or OS == "unix":
@@ -83,6 +85,15 @@ ProviderTest \
 TestService \
 TestTransaction"""
 
+manifestString = """Manifest-Version: 1.0
+Class-Path: .
+            ExtLibs/{0}
+            ExtLibs/{1}
+            ExtLibs/{2}
+            ExtLibs/{3}
+Main-Class: com.psu.group9.Terminal
+"""
+
 
 f = open("Makefile", "w")
 f.write(cpString.format(SQLiteLocation, delimiter, ToolsLocation, JUnitLocation,
@@ -100,3 +111,11 @@ f = open("runTests.sh", "w")
 f.write(runTestsString.format(SQLiteLocation, delimiter, ToolsLocation, 
                                  JUnitLocation, SrcLocation, TestsLocation))
 f.close()
+
+f = open("MANIFEST.MF", "w")
+f.write(manifestString.format("org." + re.split("/", HamcrestLocation)[-1],
+                              re.split("/", SQLiteLocation)[-1],
+                              re.split("/", JUnitLocation)[-1],
+                              re.split("/", ToolsLocation)[-1]))
+f.close()
+                              
