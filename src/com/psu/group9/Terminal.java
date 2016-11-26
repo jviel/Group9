@@ -216,7 +216,7 @@ public class Terminal {
                                 + "Patient Address: " + p.getAddress()  + "\n"
                                 + "Patient City: "    + p.getCity()     + "\n"
                                 + "Patient State: "   + p.getState()    + "\n"
-                                + "Patient Zip:"      + p.getZip()      + "\n";
+                                + "Patient Zip: "      + p.getZip()     + "\n";
 
                 for (Transaction t : weekTransactions){
                     pReport += "---Service " + serviceCount + "----\n";
@@ -285,7 +285,7 @@ public class Terminal {
                                 + "Provider Address: " + p.getAddress()  + "\n"
                                 + "Provider City: "    + p.getCity()     + "\n"
                                 + "Provider State: "   + p.getState()    + "\n"
-                                + "Provider Zip:"      + p.getZip()      + "\n";
+                                + "Provider Zip: "      + p.getZip()      + "\n";
 
                 for (Transaction t : weekTransactions){
                     pReport += "---Service " + serviceCount + "----\n";
