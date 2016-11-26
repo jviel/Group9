@@ -47,7 +47,6 @@ public class Database {
     }
 
     private void loadFile(File dbFile) throws SQLException {
-    	System.out.println("In loadFile");
     	Statement stmt = conn.createStatement();
     	stmt.executeUpdate("restore from " + dbFile.getPath());
     }
