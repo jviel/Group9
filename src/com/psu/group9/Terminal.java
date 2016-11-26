@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.Scanner;
 import java.util.Vector;
 import java.io.*;
+import java.util.Calendar;
 
 /**
  * Created by andykeene on 11/10/16.
@@ -49,7 +50,13 @@ public class Terminal {
                         providerTerminal(db);
                         break;
                 case 4: //TODO: Remove test*/
-                        writeToFile("test_report", "data!");
+
+                        /*Calendar week = Calendar.getInstance();
+                        String date = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+                        week.add(Calendar.WEEK_OF_YEAR, -1);
+                        String lastWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+                        System.out.println("Last week: " + lastWeek + "\nthis week: " + date);*/
+                    //writeToFile("test_report", "data!");
                         //System.out.println("Thank you for using CA!");
                         break;
 
@@ -368,12 +375,10 @@ public class Terminal {
         int weeksTotalProviders = 0;                                        //Provider count
         float weeksTotalFee = 0;                                            //Fee total
         Set<Integer> weeksTotalConsultation = new HashSet<>();              //Unique consultation count
+        StringBuilder reportData = new StringBuilder();                     //File data! Fast, mutable advantage
 
-        System.out.println("Today is: " + today);
-        System.out.println("##### Beginning EFT Report ####\n");
-        /*TODO: REMOVE THIS TEST*/
-
-        today = getString("Please enter a date: ", 0, 15);
+        //System.out.println();
+        System.out.println("##### Beginning Summary Report " + getWeekRange() +  " ####\n");
 
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
@@ -408,15 +413,23 @@ public class Terminal {
                 weeksTotalFee += feeTotal;
                 pReport +=  "Total Fee Owed: "              + fmt.format(feeTotal)     + "\n"
                         +   "Total Unique Consultations: "  + consultationCount.size() + "\n";
+                reportData.append(pReport);                                         //file data *
                 System.out.println(pReport);                                        //Report prints here
             }
         }
 
         //Summary report totals
-        System.out.println("\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
-                           "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
-                           "\nWeeks Total Number of Active Providers: " + weeksTotalProviders);
-        System.out.println("\n##### Ending EFT Report ####");
+        String reportSummary = "\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
+                               "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
+                               "\nWeeks Total Number of Active Providers: " + weeksTotalProviders;
+        System.out.println(reportSummary);
+        reportData.append(reportSummary);                                           //file data *
+        System.out.println("\n##### Ending Summary Report ####");
+
+        //Write to file
+        /*TODO: Write to File*/
+        String reportName = "eftReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
     /**
@@ -425,41 +438,43 @@ public class Terminal {
      */
     private static boolean writeToFile(String filename, String data)
     {
-        boolean ret = false;
-        String appDir = System.getProperty("user.dir");     /*TODO: Try-catch block? for security exception*/
-        File reportDir= new File(appDir + "/reports");     //Report directory is created as appDir/reports
+        boolean status = true;                                  //Flags successive operations
+        String appDir = "";
+        try{                                                    //unclear on when S.E is thrown, but can occur
+            appDir = System.getProperty("user.dir");            //Get abs. path to app directory
+        } catch (SecurityException se){
+            System.out.println("Security issue: " + se + "\n");
+            status = false;                                     //Status will be used to flag SE for file-write attmpt
+        }
 
-        /* TODO: remove the test printing */
-        if (!reportDir.exists()){                          //If /reports doesn't exist, create it and inform usr
-            if(reportDir.mkdir()){
-                System.out.println("Creating directory " + reportDir + "...");
-            } else {
-                System.out.println("Failed to make " + reportDir + "...");
+        if (status) {
+
+            File reportDir = new File(appDir + "/reports");     //Report directory is created as appDir/reports
+            if (!reportDir.exists()) {                          //If abs_path/reports doesn't exist, create it and inform usr
+                if (reportDir.mkdir()) {
+                    System.out.println("Creating directory " + reportDir + "...");
+                } else {
+                    System.out.println("Failed to make " + reportDir + "...");
+                }
             }
-        } else {
-          //  System.out.println("Directory" + reportDir + " already exists..");
+
+            File report = new File(reportDir, filename);        //open file in reports dir and write!
+            try {                                               //open file write util, and write data to filename
+                                                                //logs each step?
+                BufferedWriter output = new BufferedWriter(new FileWriter(report));
+                System.out.println("Creating file " + filename + "...");
+                output.write(data);
+                output.close();
+                System.out.println("Successfully wrote report to " + report.getAbsolutePath());
+                status = true;
+            } catch (IOException e) {
+                System.out.println("Failed to write report to " + report.getAbsolutePath());
+                status = false;
+            }
         }
 
-        //open file in reports dir and write!
-        File report = new File(reportDir, filename);
-
-        //open file write util, and write data to filename
-        try {
-            BufferedWriter output = new BufferedWriter(new FileWriter(report));
-            output.write(data);
-            output.close();
-            System.out.println("Successfully wrote report to " + report.getAbsolutePath());
-            ret = true;
-        } catch (IOException e) {
-            System.out.println("Failed to write report to " + report.getAbsolutePath());
-            ret = false;
-        }
-
-
-        //System.out.println("Working Directory = " + System.getProperty("user.dir"));
-
-        //Returns success of file writing
-        return ret;
+        //Status = false iff Sec. Exception or BufferedReader error
+        return status;
     }
 
     /**
@@ -1050,6 +1065,18 @@ public class Terminal {
         SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
         Date date = new Date();
         return sdf.format(date);
+    }
+
+    //Returns range of last week through this week in format of "MM-dd-yyyy_to_MM-dd-yyyy"
+    private static String getWeekRange()
+    {
+        Calendar week = Calendar.getInstance();
+        String thisWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+        week.add(Calendar.WEEK_OF_YEAR, -1);
+        String lastWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
+        //System.out.println("Last week: " + lastWeek + "\nthis week: " + date);
+
+        return lastWeek + "_to_" + thisWeek;
     }
 
     private static Patient validatePatient(Database db)
