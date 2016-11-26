@@ -191,9 +191,10 @@ public class Terminal {
     private static void patientReport(Database db)
     {
         String today = getDate();
+        StringBuilder reportData = new StringBuilder();
 
-        //System.out.println("Today is: " + today);
-        System.out.println("##### Beginning Patient Report ####\n");
+
+        System.out.println("##### Beginning Patient Report " + getWeekRange() + " ####\n");
 
         //Look at all patients because some may have been invalidated in past week
         Vector<Entity> patients = db.getAllPatients();
@@ -232,10 +233,14 @@ public class Terminal {
                     serviceCount++;
                 }
                 System.out.println(pReport);
+                reportData.append(pReport);                                                     //file data *
             }
         }
 
         System.out.println("\n##### Ending Patient Report ####");
+        //Write to file
+        String reportName = "patientReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
     /**
@@ -248,10 +253,9 @@ public class Terminal {
     private static void providerReport(Database db)
     {
         String today = getDate();
-        System.out.println("Today is: " + today);
-        System.out.println("##### Beginning Provider Report ####\n");
+        StringBuilder reportData = new StringBuilder();
 
-
+        System.out.println("##### Beginning Provider Report " + getWeekRange() + " ####\n");
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
 
@@ -260,7 +264,6 @@ public class Terminal {
             //Get week transaction for provider ID
             int id = p.getIdNumber();
             Vector<Transaction> weekTransactions = db.getWeekTransactionsByProvider(id, today);
-             /*TODO: Verify mthd call change from patient to provider is correct*/
 
             //if patient has transactions for this week, format report to string
             if(!weekTransactions.isEmpty()){
@@ -310,10 +313,14 @@ public class Terminal {
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
                         +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                              //Report prints here
-                /* TODO: Verify this print is in the correct place....?*/
+                reportData.append(pReport);                                               //file data *
+
             }
         }
         System.out.println("\n##### Ending Provider Report ####");
+        //Write to file
+        String reportName = "providerReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
 
@@ -327,8 +334,9 @@ public class Terminal {
     private static void eftReport(Database db)
     {
         String today = getDate();
-        System.out.println("Today is: " + today);
-        System.out.println("##### Beginning EFT Report ####\n");
+        StringBuilder reportData = new StringBuilder();
+
+        System.out.println("##### Beginning EFT Report " + getWeekRange() + " ####\n");
 
         //Look at all providers because some may have been invalidated in past week
         Vector<Entity> providers = db.getAllProviders();
@@ -355,9 +363,13 @@ public class Terminal {
                 }
                 pReport +=  "Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
                 System.out.println(pReport);                                        //Report prints here
+                reportData.append(pReport);                                         //file data *
             }
         }
         System.out.println("\n##### Ending EFT Report ####");
+        //Write to file
+        String reportName = "eftReport_" + getWeekRange();
+        writeToFile(reportName, reportData.toString());
     }
 
     /**
@@ -421,19 +433,19 @@ public class Terminal {
         //Summary report totals
         String reportSummary = "\nWeeks Fee Total: "                        + fmt.format(weeksTotalFee) +
                                "\nWeeks Unique Consultation Count: "        + weeksTotalConsultation.size() +
-                               "\nWeeks Total Number of Active Providers: " + weeksTotalProviders;
+                               "\nWeeks Total Number of Active Providers: " + weeksTotalProviders + "\n";
         System.out.println(reportSummary);
         reportData.append(reportSummary);                                           //file data *
         System.out.println("\n##### Ending Summary Report ####");
 
         //Write to file
-        /*TODO: Write to File*/
-        String reportName = "eftReport_" + getWeekRange();
+        String reportName = "summaryReport_" + getWeekRange();
         writeToFile(reportName, reportData.toString());
     }
 
     /**
-     * Writes string to file
+     * Writes string to file, creates reports directory in application folder path if it
+     * does not exist
      * @return True is successful write, false if else
      */
     private static boolean writeToFile(String filename, String data)
