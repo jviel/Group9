@@ -516,12 +516,9 @@ public class Terminal {
             System.out.println("Login ID Authenticated\n");
         }
 
-
-
         while (option != omMax ){
             System.out.print(operatorMenu);
             option = getInt(prompt, omMin, omMax);
-
 
             switch(option) {
 
@@ -808,10 +805,6 @@ public class Terminal {
             System.out.println("Consultation canceled.\n");
             return;
         }
-//        if(!getConfirmation("\nAdd consultation for following patient?\n" + patient + "\n")) {
-//            System.out.println("Consultation canceled.\n");
-//            return;
-//        }
 
         /* -- Enter consultation date -- */
         do{
@@ -832,6 +825,7 @@ public class Terminal {
                     System.out.println(getProivderDirectoryHeader());
                     for (Service svc : db.getAllActiveServices())
                         System.out.println(svc);
+                    System.out.println();
                     break;
 
                 case 2: // Add Service to consultation
@@ -1085,8 +1079,7 @@ public class Terminal {
         return p;
     }
 
-    private static Service validateService(Database db)
-    {
+    private static Service validateService(Database db) {
         int id = getInt("Enter service ID: ", 0, 999999);
         Vector<Service> v = db.getServiceByID(id);
         if (v.isEmpty()) {
@@ -1096,7 +1089,11 @@ public class Terminal {
 
         Service s = v.firstElement();
         System.out.println(s);
-        if(getConfirmation("Is this the correct service?"))
+        if (!s.getStatus()) {
+            System.out.println("Service is no longer billable.");
+            return null;
+        }
+        else if(getConfirmation("Is this the correct service?"))
             return s;
         else
             return null;
