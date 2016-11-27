@@ -49,15 +49,7 @@ public class Terminal {
                 case 3: System.out.println("Entering Provider Terminal:" + '\n');
                         providerTerminal(db);
                         break;
-                case 4: //TODO: Remove test*/
-
-                        /*Calendar week = Calendar.getInstance();
-                        String date = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
-                        week.add(Calendar.WEEK_OF_YEAR, -1);
-                        String lastWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
-                        System.out.println("Last week: " + lastWeek + "\nthis week: " + date);*/
-                    //writeToFile("test_report", "data!");
-                        //System.out.println("Thank you for using CA!");
+                case 4: //quit
                         break;
 
                 default:
@@ -65,6 +57,8 @@ public class Terminal {
                         break;
             }
         }
+
+        db.saveDB();
     }
 
 
@@ -99,13 +93,19 @@ public class Terminal {
 
             switch(option){
                 case 1: //List services,
+                        StringBuilder servicesForFile = new StringBuilder();
                         Vector<Service> services = db.getAllServices();
                         System.out.println("All services");
                         String headers = getProivderDirectoryHeader();
+                        servicesForFile.append(headers + "\n");         // file data *
                         System.out.println(headers);
                         for (Service s : services){
+                            servicesForFile.append(s + "\n");           // file data *
                             System.out.println(s);
                         }
+                        writeToFile("provider_directory",
+                                     servicesForFile.toString(),
+                                     "Provider_Directory");             // file data * write
                         break;
                 case 2: //Add service
                      /* --- TODO: Add confirmation for service object add? -- essentially already done in getService.. */
@@ -191,8 +191,8 @@ public class Terminal {
     private static void patientReport(Database db)
     {
         String today = getDate();
-        StringBuilder reportData = new StringBuilder();
-
+        final String folder = "Patient_Reports";
+        //StringBuilder reportData = new StringBuilder();
 
         System.out.println("##### Beginning Patient Report " + getWeekRange() + " ####\n");
 
@@ -214,7 +214,7 @@ public class Terminal {
                                 + "Patient Address: " + p.getAddress()  + "\n"
                                 + "Patient City: "    + p.getCity()     + "\n"
                                 + "Patient State: "   + p.getState()    + "\n"
-                                + "Patient Zip:"      + p.getZip()      + "\n";
+                                + "Patient Zip: "      + p.getZip()     + "\n";
 
                 for (Transaction t : weekTransactions){
                     pReport += "---Service " + serviceCount + "----\n";
@@ -225,22 +225,29 @@ public class Terminal {
                     if (!service.isEmpty()){
                         serviceName = service.elementAt(0).getName();
                     }
+                    //Prerequisite 2: Get provider name  - prints unresolved if db cannot find it
+                    String providerName = "Unresolved";
+                    Vector<Entity> provider = db.getProviderByID(t.getProviderID());
+                    if(!provider.isEmpty()){
+                        providerName = provider.elementAt(0).getName();
+                    }
 
                     pReport += "Service date: " + t.getServiceDate() + "\n"
-                            + "Provider name: " + t.getProviderID()  + "\n"
+                            + "Provider name: " + providerName       + "\n"
                             + "Service name: "  + serviceName        + "\n";
 
                     serviceCount++;
                 }
                 System.out.println(pReport);
-                reportData.append(pReport);                                                     //file data *
+
+                //File name = "first_last_StartDate_to_EndDate"                                 //Print + write report
+                String reportName = p.getName().replaceAll(" ", "_") + "_" + getWeekRange();
+                writeToFile(reportName, pReport, folder);
+                //reportData.append(pReport);                                                   //old report creation
             }
         }
 
         System.out.println("\n##### Ending Patient Report ####");
-        //Write to file
-        String reportName = "patientReport_" + getWeekRange();
-        writeToFile(reportName, reportData.toString());
     }
 
     /**
@@ -248,12 +255,11 @@ public class Terminal {
      *
      * @param Database that holds report data
      */
-
-    /*TODO: Further testing, aaaand use a string builder??*/
     private static void providerReport(Database db)
     {
         String today = getDate();
-        StringBuilder reportData = new StringBuilder();
+        final String folder = "Provider_Reports";
+        //StringBuilder reportData = new StringBuilder();
 
         System.out.println("##### Beginning Provider Report " + getWeekRange() + " ####\n");
         //Look at all providers because some may have been invalidated in past week
@@ -277,7 +283,7 @@ public class Terminal {
                                 + "Provider Address: " + p.getAddress()  + "\n"
                                 + "Provider City: "    + p.getCity()     + "\n"
                                 + "Provider State: "   + p.getState()    + "\n"
-                                + "Provider Zip:"      + p.getZip()      + "\n";
+                                + "Provider Zip: "      + p.getZip()      + "\n";
 
                 for (Transaction t : weekTransactions){
                     pReport += "---Service " + serviceCount + "----\n";
@@ -304,7 +310,7 @@ public class Terminal {
                             + "Patient Name: "    + patientName                + "\n"
                             + "Patient ID: "      + t.getPatientID()           + "\n"
                             + "Service ID: "      + t.getServiceID()           + "\n"
-                            + "Fee: "             + serviceFeeString           + "\n";       /*TODO: Should I clean this up?*/
+                            + "Fee: "             + serviceFeeString           + "\n";
 
                     serviceCount++;                                                        //Increment service count
                     consultations.add(t.getConsultationNumber());                          //Add consultation ID - Autoboxed
@@ -312,15 +318,16 @@ public class Terminal {
 
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
                         +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
-                System.out.println(pReport);                                              //Report prints here
-                reportData.append(pReport);                                               //file data *
 
+                System.out.println(pReport);                                              //Report prints + writes here
+                //File name = "first_last_StartDate_to_EndDate"
+                String reportName = p.getName().replaceAll(" ", "_") + "_" + getWeekRange();
+                writeToFile(reportName, pReport, folder);
+                //reportData.append(pReport);                                             //old report creation
+                System.out.println(pReport);                                              //Report prints here
             }
         }
         System.out.println("\n##### Ending Provider Report ####");
-        //Write to file
-        String reportName = "providerReport_" + getWeekRange();
-        writeToFile(reportName, reportData.toString());
     }
 
 
@@ -330,10 +337,10 @@ public class Terminal {
      *
      * @param Database that contains transactional data
      */
-
     private static void eftReport(Database db)
     {
         String today = getDate();
+        final String folder = "EFT_Reports";
         StringBuilder reportData = new StringBuilder();
 
         System.out.println("##### Beginning EFT Report " + getWeekRange() + " ####\n");
@@ -369,7 +376,8 @@ public class Terminal {
         System.out.println("\n##### Ending EFT Report ####");
         //Write to file
         String reportName = "eftReport_" + getWeekRange();
-        writeToFile(reportName, reportData.toString());
+
+        writeToFile(reportName, reportData.toString(), folder);
     }
 
     /**
@@ -383,6 +391,7 @@ public class Terminal {
     private static void summaryReport(Database db)
     {
         String today = getDate();
+        final String folder = "Summary_Reports";                            //Folder for * data
         NumberFormat fmt = NumberFormat.getCurrencyInstance();              //For formatting currency
         int weeksTotalProviders = 0;                                        //Provider count
         float weeksTotalFee = 0;                                            //Fee total
@@ -440,7 +449,7 @@ public class Terminal {
 
         //Write to file
         String reportName = "summaryReport_" + getWeekRange();
-        writeToFile(reportName, reportData.toString());
+        writeToFile(reportName, reportData.toString(), folder);
     }
 
     /**
@@ -448,7 +457,8 @@ public class Terminal {
      * does not exist
      * @return True is successful write, false if else
      */
-    private static boolean writeToFile(String filename, String data)
+
+    private static boolean writeToFile(String filename, String data, String folder)
     {
         boolean status = true;                                  //Flags successive operations
         String appDir = "";
@@ -460,8 +470,8 @@ public class Terminal {
         }
 
         if (status) {
-
-            File reportDir = new File(appDir + "/reports");     //Report directory is created as appDir/reports
+                                                                //Report directory is created as appDir/reports/folder
+            File reportDir = new File(appDir + "/reports" + "/" + folder);
             if (!reportDir.exists()) {                          //If abs_path/reports doesn't exist, create it and inform usr
                 if (reportDir.mkdir()) {
                     System.out.println("Creating directory " + reportDir + "...");
