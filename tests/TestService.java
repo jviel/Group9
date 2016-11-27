@@ -119,7 +119,7 @@ public class TestService {
     @Test
     public void testCode() {
         try {
-            Service service = new Service(0, "", 0.0f, 1);
+            Service service = new Service(0, "Robert", 0.0f, 1);
             int result = service.getCode();
             assertEquals(0, result);
         } catch (InputException e) {
@@ -130,7 +130,7 @@ public class TestService {
     @Test
     public void testFee() {
         try {
-            Service service = new Service("", 60.85f);
+            Service service = new Service("Bob", 60.85f);
             float expectedResult = 60.85f;
             float actualResult = service.getFee();
             assertEquals(expectedResult, actualResult, 0.00000001);
@@ -142,7 +142,7 @@ public class TestService {
     @Test
     public void testStatus() {
         try {
-            Service service = new Service(0, "", 60.85f, 1);
+            Service service = new Service(0, "James", 60.85f, 1);
             Boolean result = service.getStatus();
             assertEquals(true, result);
         } catch (InputException e) {
@@ -155,8 +155,8 @@ public class TestService {
     @Test
     public void testToStringActive() {
         try {
-            Service service = new Service(1, "Massage", 60.85f, 1);
-            String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Active";
+            Service service = new Service(100000, "Massage", 60.85f, 1);
+            String expectedResult = "100000    Massage                 $60.85      Active";
             String actualResult = service.toString();
             assertEquals(expectedResult, actualResult);
         } catch (InputException e) {
@@ -167,8 +167,8 @@ public class TestService {
     @Test
     public void testToStringInactive() {
         try {
-            Service service = new Service(1, "Massage", 60.85f, 0);
-            String expectedResult = "Code: 1  Name: Massage  Fee: $60.85  Status: Inactive";
+            Service service = new Service(100000, "Massage", 60.85f, 0);
+            String expectedResult = "100000    Massage                 $60.85      Inactive";
             String actualResult = service.toString();
             assertEquals(expectedResult, actualResult);
         } catch (InputException e) {
