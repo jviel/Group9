@@ -62,13 +62,16 @@ product:
 \tsh runTests.sh
 \t#Copy TestDB to database.db.
 \tcp testDB.db database.db
+\t#Create the reports folder.
+\tmkdir reports
 \t#Create the .zip out of the jar and the external libraries.
 \t
-\tzip -r CA.zip ExtLibs CA.jar database.db
+\tzip -r CA.zip ExtLibs reports CA.jar database.db
 \t
 \t#Remove the components that we've created along this route.
 \trm CA.jar
 \trm -rf ExtLibs
+\trm -rf reports
 
 clean:
 \trm src/com/psu/group9/*.class
