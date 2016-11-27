@@ -49,15 +49,7 @@ public class Terminal {
                 case 3: System.out.println("Entering Provider Terminal:" + '\n');
                         providerTerminal(db);
                         break;
-                case 4: //TODO: Remove test*/
-
-                        /*Calendar week = Calendar.getInstance();
-                        String date = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
-                        week.add(Calendar.WEEK_OF_YEAR, -1);
-                        String lastWeek = week.get(Calendar.MONTH) + 1 + "-" + week.get(Calendar.DAY_OF_MONTH) + "-" + week.get(Calendar.YEAR);
-                        System.out.println("Last week: " + lastWeek + "\nthis week: " + date);*/
-                    //writeToFile("test_report", "data!");
-                        //System.out.println("Thank you for using CA!");
+                case 4: //quit
                         break;
 
                 default:
@@ -202,7 +194,6 @@ public class Terminal {
         final String folder = "Patient_Reports";
         //StringBuilder reportData = new StringBuilder();
 
-
         System.out.println("##### Beginning Patient Report " + getWeekRange() + " ####\n");
 
         //Look at all patients because some may have been invalidated in past week
@@ -248,6 +239,7 @@ public class Terminal {
                     serviceCount++;
                 }
                 System.out.println(pReport);
+
                 //File name = "first_last_StartDate_to_EndDate"                                 //Print + write report
                 String reportName = p.getName().replaceAll(" ", "_") + "_" + getWeekRange();
                 writeToFile(reportName, pReport, folder);
@@ -326,11 +318,13 @@ public class Terminal {
 
                 pReport += "*Number of consultations: " + consultations.size() + "\n"
                         +  "*Total Fee Owed: " + fmt.format(feeTotal) + "\n\n";
+
                 System.out.println(pReport);                                              //Report prints + writes here
                 //File name = "first_last_StartDate_to_EndDate"
                 String reportName = p.getName().replaceAll(" ", "_") + "_" + getWeekRange();
                 writeToFile(reportName, pReport, folder);
                 //reportData.append(pReport);                                             //old report creation
+                System.out.println(pReport);                                              //Report prints here
             }
         }
         System.out.println("\n##### Ending Provider Report ####");
@@ -382,6 +376,7 @@ public class Terminal {
         System.out.println("\n##### Ending EFT Report ####");
         //Write to file
         String reportName = "eftReport_" + getWeekRange();
+
         writeToFile(reportName, reportData.toString(), folder);
     }
 
@@ -462,6 +457,7 @@ public class Terminal {
      * does not exist
      * @return True is successful write, false if else
      */
+
     private static boolean writeToFile(String filename, String data, String folder)
     {
         boolean status = true;                                  //Flags successive operations
