@@ -2,7 +2,7 @@
 ## ChocAn Stakeholders
 Please visit our [releases page](https://github.com/Gilmore-PDX-CS/Group9/releases) and download `CA.zip` from the `v1.0` release. 
 
-To run the application:
+### Running CA
 1. Extract `CA.zip`
 2. Open a terminal window and navigate into the extracted folder
 3. Run the command `java -jar CA.jar`
