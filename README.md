@@ -1,5 +1,5 @@
 # CA Management System
-## ChocAn Stakeholders
+## -- ChocAn Stakeholders --
 Please visit our [releases page](https://github.com/Gilmore-PDX-CS/Group9/releases) and download `CA.zip` from the `v1.0` release. 
 
 ### Running CA
@@ -12,10 +12,11 @@ The logins for application are:
 * **Operator Prime**: `23571113`
 * **Provider**: any from `100000001` to `100000015`
 
-## Building the Test Database
+## -- CA Developers --
+### Building the Test Database
 Run `DBTest.java` from the tests folder. It generates a db in your project dir called `testDB.db`. Rename that file to `database.db` and Terminal will then recognize it as the main db.  
 
-## Building the Makefile and Run Scripts
+### Building the Makefile and Run Scripts
 The Python 3 script `createMakefile.py` builds `runTerminal.sh`, `runTests.sh`, and `Makefile`. The script asks you for the locations of project dependencies. Find the _absolute path_ for the JARs used by the project and enter them when prompted. Alternatively, you can create a file `locations.txt` and pipe it to the script:
 
 ```
@@ -40,12 +41,12 @@ Run `make` to compile the project.
 
 Change the permissions as needed on `runTerminal.sh` and `runTests.sh` and they will be ready to run the Terminal or the JUnit tests respectively.
 
-## Building a Release
+### Building a Release
 Follow the instructions for building the `Makefile`, then run `make product`. This will produce a zip file with a compiled version of CA. 
 
 To run CA, extract the zip file and run `java -jar CA.jar`.
 
-## Adding JDBC 
+### Adding JDBC 
 
 Go to [here](https://bitbucket.org/xerial/sqlite-jdbc/downloads) and select a jar. The requirements document specifies Version 3.14.2.1, but later versions also work. Note that 
 
@@ -58,7 +59,7 @@ Someone who is using IntelliJ or another pleb ID should be able to do something 
 **To set up SQLite database once you have JDBC jar above: for Intellij, go to `Project Structure -> Libraries -> hit '+' -> point it to jdbc jar'` then recompile  
    
 
-## .gitattributes file deals with line endings  
+### .gitattributes file deals with line endings   
 create a file in your local repo called .gitattributes with the following:
 ```
 text = auto  # for Windows
@@ -79,7 +80,7 @@ makefile text
 *.pdf  binary
 ```
 
-##pull requests
+### pull requests  
 1. Make a branch or switch to existing
 2. Edit code
 3. Commit locally (with meaningful message!)
