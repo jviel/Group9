@@ -1,11 +1,16 @@
 # CA Management System
+## ChocAn Stakeholders
+Please visit our [releases page](https://github.com/Gilmore-PDX-CS/Group9/releases) and download `CA.zip` from the `v1.0` release. 
 
-## CA Logins
-**Manager Fibonacci**: 11235813
+### Running CA
+1. Extract `CA.zip`
+2. Open a terminal window and navigate into the extracted folder
+3. Run the command `java -jar CA.jar`
 
-**Operator Prime**: 23571113
-
-**Provider**: any from 100000001 to 100000015
+The logins for application are:
+* **Manager Fibonacci**: `11235813`
+* **Operator Prime**: `23571113`
+* **Provider**: any from `100000001` to `100000015`
 
 ## Building the Test Database
 Run `DBTest.java` from the tests folder. It generates a db in your project dir called `testDB.db`. Rename that file to `database.db` and Terminal will then recognize it as the main db.  
