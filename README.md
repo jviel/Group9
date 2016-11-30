@@ -11,6 +11,10 @@ The logins for application are:
 * **Manager Fibonacci**: `11235813`
 * **Operator Prime**: `23571113`
 * **Provider**: any from `100000001` to `100000015`
+* **Patient**: any from  `100000001` to `100000015`
+* **Service**: any from `100000` to `100011`  
+
+When entering a consultation date, enter a date within the last week. Otherwise it won't show up in the reports.
 
 ## -- CA Developers --
 ### Building the Test Database
