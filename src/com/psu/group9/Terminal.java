@@ -511,7 +511,7 @@ public class Terminal {
         while(!validInput) {
             //Takes name and fee - database handles the rest for add, ID is passed separate for Update
             String name = getString("Please enter the service name: ", 0, 21);
-            Float fee = getFloat("Please enter the fee: ", 0f, 9999.99f);
+            Float fee = getFloat("Please enter the fee: ", 0f, 999.99f);
 
             try {
                 service = new Service(0, name, fee, 1);
