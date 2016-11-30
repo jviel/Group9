@@ -323,8 +323,6 @@ public class Terminal {
                 //File name = "first_last_StartDate_to_EndDate"
                 String reportName = p.getName().replaceAll(" ", "_") + "_" + getWeekRange();
                 writeToFile(reportName, pReport, folder);
-                //reportData.append(pReport);                                             //old report creation
-                System.out.println(pReport);                                              //Report prints here
             }
         }
         System.out.println("\n##### Ending Provider Report ####");
@@ -473,7 +471,7 @@ public class Terminal {
                                                                 //Report directory is created as appDir/reports/folder
             File reportDir = new File(appDir + "/reports" + "/" + folder);
             if (!reportDir.exists()) {                          //If abs_path/reports doesn't exist, create it and inform usr
-                if (reportDir.mkdir()) {
+                if (reportDir.mkdirs()) {
                     System.out.println("Creating directory " + reportDir + "...");
                 } else {
                     System.out.println("Failed to make " + reportDir + "...");
