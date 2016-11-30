@@ -509,7 +509,7 @@ public class Terminal {
         while(!validInput) {
             //Takes name and fee - database handles the rest for add, ID is passed separate for Update
             String name = getString("Please enter the service name: ", 0, 21);
-            Float fee = getFloat("Please enter the fee: ", 0f, 9999.99f);
+            Float fee = getFloat("Please enter the fee: ", 0f, 999.99f);
 
             try {
                 service = new Service(0, name, fee, 1);
@@ -801,9 +801,18 @@ public class Terminal {
                     addConsultation(db, provider);
                     break;
                 case 3: // List services
-                    System.out.println(getProivderDirectoryHeader());
-                    for (Service svc : db.getAllActiveServices())
+                    StringBuilder servicesForFile = new StringBuilder();
+                    Vector<Service> services = db.getAllServices();
+                    String headers = getProivderDirectoryHeader();
+                    servicesForFile.append(headers + "\n");         // file data *
+                    System.out.println(headers);
+                    for (Service svc : services) {
+                        servicesForFile.append(svc + "\n");           // file data *
                         System.out.println(svc);
+                    }
+                    writeToFile("provider_directory",
+                                servicesForFile.toString(),
+                                "Provider_Directory");             // file data * write
                     break;
                 case 4: // quit
                     System.out.println("Logging out of provider terminal\n");

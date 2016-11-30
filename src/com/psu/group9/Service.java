@@ -17,7 +17,7 @@ public class Service {
         if (code < 0 || code > 999999) {
             exceptionString += "Code must be a six-digit integer.\n";
         }
-        
+
         if (!name.matches("[a-zA-Z ]+")) {
         	exceptionString += "Please enter valid Service name.";
         }
@@ -26,8 +26,8 @@ public class Service {
             exceptionString += "Name must have 20 characters or fewer.\n";
         }
 
-        if (fee < 0 || fee > 9999.99) {
-            exceptionString += "Fee must be between 0 and 9999.99 dollars";
+        if (fee < 0 || fee > 999.99) {
+            exceptionString += "Fee must be between 0 and 999.99 dollars";
         }
 
         if (!(exceptionString.isEmpty())) {
@@ -52,7 +52,7 @@ public class Service {
     	this(0, name, fee, 1);
         return;
     }
-    
+
 
     // ---- Setters and getters ---
     private void setName(String name) {
@@ -90,7 +90,6 @@ public class Service {
     // ---- Overrides ----
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
         NumberFormat fmt = NumberFormat.getCurrencyInstance();
         String currStatus = (status) ? "Active" : "Inactive";
         return String.format("%-9d %-23s %-11s %-6s", code, name, fmt.format(fee), currStatus);
